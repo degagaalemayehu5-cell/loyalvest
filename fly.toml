@@ -1,0 +1,30 @@
+app = "loyalvest-app"
+primary_region = "lax"
+
+[build]
+  [build.args]
+    NODE_ENV = "production"
+
+[build.buildpacks]
+  # Node.js buildpack will detect both frontend and backend
+  - "gcr.io/paketo-buildpacks/nodejs"
+
+[http_service]
+  internal_port = 5000
+  force_https = true
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 5000
+  
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+  
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256"
