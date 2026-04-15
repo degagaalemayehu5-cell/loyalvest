@@ -43,7 +43,7 @@ const sendWithdrawalStatusEmail = async (email, name, amount, status, notes = ''
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2>Withdrawal Request ${status.toUpperCase()}</h2>
       <p>Dear ${name},</p>
-      <p>Your withdrawal request of <strong>₹${amount}</strong> has been <strong style="color: ${statusColor};">${status}</strong>.</p>
+      <p>Your withdrawal request of <strong>ETB${amount}</strong> has been <strong style="color: ${statusColor};">${status}</strong>.</p>
       ${notes ? `<p><strong>Admin Note:</strong> ${notes}</p>` : ''}
       <a href="${process.env.FRONTEND_URL}/account" style="background-color: #4F46E5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Account</a>
     </div>

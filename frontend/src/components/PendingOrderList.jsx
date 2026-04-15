@@ -36,7 +36,7 @@ const PendingOrderList = () => {
             <div className="flex justify-between items-start mb-2">
               <div>
                 <p className="font-medium text-gray-900">Withdrawal Request</p>
-                <p className="text-sm text-gray-500">Amount: ₹{t.amount.toLocaleString()}</p>
+                <p className="text-sm text-gray-500">Amount: ETB{t.amount.toLocaleString()}</p>
               </div>
               <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
                 Pending

@@ -10,12 +10,12 @@ const ProductCard = ({ product }) => {
   
   const handleInvest = async () => {
     if (amount < product.minInvestment) {
-      toast.error(`Minimum investment is ₹${product.minInvestment}`);
+      toast.error(`Minimum investment is ETB${product.minInvestment}`);
       return;
     }
     
     if (product.maxInvestment && amount > product.maxInvestment) {
-      toast.error(`Maximum investment is ₹${product.maxInvestment}`);
+      toast.error(`Maximum investment is ETB${product.maxInvestment}`);
       return;
     }
     
@@ -51,12 +51,12 @@ const ProductCard = ({ product }) => {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-1 text-gray-600">
             <FiDollarSign className="text-xs" />
-            <span>Min: ₹{product.minInvestment}</span>
+            <span>Min: ETB{product.minInvestment}</span>
           </div>
           {product.maxInvestment && (
             <div className="flex items-center gap-1 text-gray-600">
               <FiDollarSign className="text-xs" />
-              <span>Max: ₹{product.maxInvestment}</span>
+              <span>Max: ETB{product.maxInvestment}</span>
             </div>
           )}
           <div className="flex items-center gap-1 text-gray-600">
@@ -80,7 +80,7 @@ const ProductCard = ({ product }) => {
             <div className="space-y-3 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Investment Amount (₹)
+                  Investment Amount (ETB)
                 </label>
                 <input
                   type="number"
@@ -92,14 +92,14 @@ const ProductCard = ({ product }) => {
                   step="100"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Min: ₹{product.minInvestment} | Max: {product.maxInvestment ? `₹${product.maxInvestment}` : 'Unlimited'}
+                  Min: ETB{product.minInvestment} | Max: {product.maxInvestment ? `ETB${product.maxInvestment}` : 'Unlimited'}
                 </p>
               </div>
               
               <div className="bg-blue-50 rounded-lg p-3">
                 <p className="text-sm text-gray-600">Expected Returns</p>
-                <p className="text-xl font-bold text-green-600">₹{expectedProfit.toLocaleString()}</p>
-                <p className="text-xs text-gray-500">+ ₹{amount.toLocaleString()} principal</p>
+                <p className="text-xl font-bold text-green-600">ETB{expectedProfit.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">+ ETB{amount.toLocaleString()} principal</p>
               </div>
             </div>
             

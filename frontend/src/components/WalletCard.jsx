@@ -25,7 +25,7 @@ const WalletCard = ({ stats }) => {
         </button>
       </div>
       <p className="text-3xl font-bold mt-1">
-        {showBalance ? `₹${balance.toLocaleString()}` : '••••••'}
+        {showBalance ? `ETB${balance.toLocaleString()}` : '••••••'}
       </p>
       
       <div className="flex gap-3 mt-4">
@@ -46,15 +46,15 @@ const WalletCard = ({ stats }) => {
       <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-white/20">
         <div>
           <p className="text-blue-100 text-xs">Total Invested</p>
-          <p className="font-semibold">₹{stats?.totalRecharged?.toLocaleString() || 0}</p>
+          <p className="font-semibold">ETB{stats?.totalRecharged?.toLocaleString() || 0}</p>
         </div>
         <div>
           <p className="text-blue-100 text-xs">Total Profit</p>
-          <p className="font-semibold">₹{stats?.totalProfit?.toLocaleString() || 0}</p>
+          <p className="font-semibold">ETB{stats?.totalProfit?.toLocaleString() || 0}</p>
         </div>
         <div>
           <p className="text-blue-100 text-xs">Pending Withdrawals</p>
-          <p className="font-semibold">₹{stats?.pendingWithdrawals?.toLocaleString() || 0}</p>
+          <p className="font-semibold">ETB{stats?.pendingWithdrawals?.toLocaleString() || 0}</p>
         </div>
         <div>
           <p className="text-blue-100 text-xs">Referrals</p>

@@ -50,7 +50,7 @@ const Profit = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-gray-500 text-sm">Total Profit Earned</p>
-              <p className="text-3xl font-bold text-green-600">₹{totalProfit.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-green-600">ETB{totalProfit.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
               <FiTrendingUp className="w-6 h-6 text-green-600" />
@@ -89,7 +89,7 @@ const Profit = () => {
                     <div>
                       <p className="font-medium text-gray-900">{inv.product?.name}</p>
                       <p className="text-sm text-gray-500">
-                        Invested: ₹{inv.amount.toLocaleString()}
+                        Invested: ETB{inv.amount.toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
@@ -132,7 +132,7 @@ const Profit = () => {
                     <p className="text-sm text-gray-600">Profit Credit</p>
                     <p className="text-xs text-gray-400">{new Date(t.createdAt).toLocaleString()}</p>
                   </div>
-                  <span className="font-semibold text-green-600">+₹{t.amount.toLocaleString()}</span>
+                  <span className="font-semibold text-green-600">+ETB{t.amount.toLocaleString()}</span>
                 </div>
               ))}
             </div>

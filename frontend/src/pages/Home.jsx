@@ -43,7 +43,7 @@ const Home = () => {
           <div className="card text-center">
             <FiTrendingUp className="w-6 h-6 text-green-500 mx-auto mb-2" />
             <p className="text-xs text-gray-500">Total Profit</p>
-            <p className="font-bold text-gray-900">₹{stats?.totalProfit?.toLocaleString() || 0}</p>
+            <p className="font-bold text-gray-900">ETB{stats?.totalProfit?.toLocaleString() || 0}</p>
           </div>
           <div className="card text-center">
             <FiUsers className="w-6 h-6 text-blue-500 mx-auto mb-2" />
@@ -53,7 +53,7 @@ const Home = () => {
           <div className="card text-center">
             <FiDollarSign className="w-6 h-6 text-purple-500 mx-auto mb-2" />
             <p className="text-xs text-gray-500">Invested</p>
-            <p className="font-bold text-gray-900">₹{stats?.totalRecharged?.toLocaleString() || 0}</p>
+            <p className="font-bold text-gray-900">ETB{stats?.totalRecharged?.toLocaleString() || 0}</p>
           </div>
         </div>
         

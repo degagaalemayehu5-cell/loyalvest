@@ -24,11 +24,11 @@ const AIChatbot = () => {
     
     // Investment related responses
     if (msg.includes('invest') || msg.includes('investment') || msg.includes('plan')) {
-      return "📈 **Investment Plans Available:**\n\n• **Bronze Plan:** 5% return (Min: ₹0)\n• **Silver Plan:** 8% return (Min: ₹1,000)\n• **Gold Plan:** 12% return (Min: ₹5,000)\n• **Platinum Plan:** 15% return (Min: ₹20,000)\n• **Diamond Plan:** 20% return (Min: ₹50,000)\n\nWant to know more about any specific plan?";
+      return "📈 **Investment Plans Available:**\n\n• **Bronze Plan:** 5% return (Min: ETB0)\n• **Silver Plan:** 8% return (Min: ETB1,000)\n• **Gold Plan:** 12% return (Min: ETB5,000)\n• **Platinum Plan:** 15% return (Min: ETB20,000)\n• **Diamond Plan:** 20% return (Min: ETB50,000)\n\nWant to know more about any specific plan?";
     }
     
     if (msg.includes('withdraw') || msg.includes('withdrawal')) {
-      return "💸 **Withdrawal Information:**\n\n• Minimum withdrawal: ₹100\n• Maximum withdrawal: ₹100,000\n• Processing time: 24-48 hours\n• No processing fees\n\nTo withdraw, go to Wallet → Withdraw and fill in your bank details.";
+      return "💸 **Withdrawal Information:**\n\n• Minimum withdrawal: ETB100\n• Maximum withdrawal: ETB100,000\n• Processing time: 24-48 hours\n• No processing fees\n\nTo withdraw, go to Wallet → Withdraw and fill in your bank details.";
     }
     
     if (msg.includes('recharge') || msg.includes('deposit') || msg.includes('add money')) {
@@ -40,11 +40,11 @@ const AIChatbot = () => {
     }
     
     if (msg.includes('referral') || msg.includes('refer') || msg.includes('bonus')) {
-      return "🎁 **Referral Program:**\n\n• Invite friends using your unique referral code\n• Get ₹50 bonus for each successful referral\n• No limit on referrals\n• Share your code in 'Account' section\n\nStart referring and earn more!";
+      return "🎁 **Referral Program:**\n\n• Invite friends using your unique referral code\n• Get ETB50 bonus for each successful referral\n• No limit on referrals\n• Share your code in 'Account' section\n\nStart referring and earn more!";
     }
     
     if (msg.includes('level') || msg.includes('tier') || msg.includes('upgrade')) {
-      return "🏆 **Level System:**\n\n• Bronze: ₹0 - ₹999 (5% profit)\n• Silver: ₹1,000 - ₹4,999 (8% profit)\n• Gold: ₹5,000 - ₹19,999 (12% profit)\n• Platinum: ₹20,000 - ₹49,999 (15% profit)\n• Diamond: ₹50,000+ (20% profit)\n\nIncrease your total investment to level up!";
+      return "🏆 **Level System:**\n\n• Bronze: ETB0 - ETB999 (5% profit)\n• Silver: ETB1,000 - ETB4,999 (8% profit)\n• Gold: ETB5,000 - ETB19,999 (12% profit)\n• Platinum: ETB20,000 - ETB49,999 (15% profit)\n• Diamond: ETB50,000+ (20% profit)\n\nIncrease your total investment to level up!";
     }
     
     if (msg.includes('admin') || msg.includes('contact support') || msg.includes('help')) {

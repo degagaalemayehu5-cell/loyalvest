@@ -29,20 +29,20 @@ const getBalance = async (req, res) => {
 // @access  Private
 const requestWithdrawal = async (req, res) => {
   try {
-    const { amount, bankName, accountNumber, accountHolder, ifscCode } = req.body;
+    const { amount, bankName, accountNumber, accountHolder,SWIFTCode } = req.body;
     
     // Validate amount
     if (!amount || amount < MIN_WITHDRAWAL) {
       return res.status(400).json({
         success: false,
-        message: `Minimum withdrawal amount is ₹${MIN_WITHDRAWAL}`
+        message: `Minimum withdrawal amount is ETB${MIN_WITHDRAWAL}`
       });
     }
     
     if (amount > MAX_WITHDRAWAL) {
       return res.status(400).json({
         success: false,
-        message: `Maximum withdrawal amount is ₹${MAX_WITHDRAWAL}`
+        message: `Maximum withdrawal amount is ETB${MAX_WITHDRAWAL}`
       });
     }
     
@@ -66,7 +66,7 @@ const requestWithdrawal = async (req, res) => {
         bankName,
         accountNumber,
         accountHolder,
-        ifscCode
+       SWIFTCode
       }
     });
     
@@ -99,7 +99,7 @@ const submitRechargeRequest = async (req, res) => {
     if (!amount || amount < 100) {
       return res.status(400).json({
         success: false,
-        message: 'Minimum recharge amount is ₹100'
+        message: 'Minimum recharge amount is ETB100'
       });
     }
     
@@ -146,10 +146,10 @@ const getRechargeInfo = async (req, res) => {
     const rechargeInfo = {
       adminAccounts: [
         {
-          bankName: "State Bank of India",
+          bankName: "State Bank of Ethiopia CBE",
           accountHolder: "Loyalvest Investments",
-          accountNumber: "12345678901",
-          ifscCode: "SBIN0012345",
+          accountNumber: "1000464654252",
+         SWIFTCode: "SBIN0012345",
           upiId: "loyalvest@okhdfcbank",
           adminName: "Admin Team"
         },
@@ -157,7 +157,7 @@ const getRechargeInfo = async (req, res) => {
           bankName: "HDFC Bank",
           accountHolder: "Loyalvest Investments",
           accountNumber: "98765432109",
-          ifscCode: "HDFC0001234",
+         SWIFTCode: "HDFC0001234",
           upiId: "loyalvest@hdfcbank",
           adminName: "Admin Team"
         }

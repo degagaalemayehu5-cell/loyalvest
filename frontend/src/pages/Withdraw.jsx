@@ -45,17 +45,17 @@ const Withdraw = () => {
     }
     
     if (withdrawAmount < minWithdrawal) {
-      toast.error(`Minimum withdrawal amount is ₹${minWithdrawal}`);
+      toast.error(`Minimum withdrawal amount is ETB${minWithdrawal}`);
       return;
     }
     
     if (withdrawAmount > maxWithdrawal) {
-      toast.error(`Maximum withdrawal amount is ₹${maxWithdrawal}`);
+      toast.error(`Maximum withdrawal amount is ETB${maxWithdrawal}`);
       return;
     }
     
     if (withdrawAmount > balance) {
-      toast.error(`Insufficient balance. Your balance is ₹${balance.toLocaleString()}`);
+      toast.error(`Insufficient balance. Your balance is ETB${balance.toLocaleString()}`);
       return;
     }
     
@@ -75,7 +75,7 @@ const Withdraw = () => {
     }
     
     if (!ifscCode.trim()) {
-      toast.error('Please enter IFSC code');
+      toast.error('Please enter SWIFT');
       return;
     }
     
@@ -86,7 +86,7 @@ const Withdraw = () => {
         bankName: bankName.trim(),
         accountNumber: accountNumber.trim(),
         accountHolder: accountHolder.trim(),
-        ifscCode: ifscCode.trim().toUpperCase()
+       SWIFTCode:SWIFTCode.trim().toUpperCase()
       });
       
       toast.success('Withdrawal request submitted successfully!');
@@ -122,7 +122,7 @@ const Withdraw = () => {
   }
   
   const isButtonDisabled = submitting || balance < minWithdrawal;
-  const buttonText = submitting ? 'Submitting...' : (balance < minWithdrawal ? `Minimum ₹${minWithdrawal} required` : 'Request Withdrawal');
+  const buttonText = submitting ? 'Submitting...' : (balance < minWithdrawal ? `Minimum ETB${minWithdrawal} required` : 'Request Withdrawal');
   
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -135,14 +135,14 @@ const Withdraw = () => {
         {/* Balance Card */}
         <div className="card">
           <p className="text-gray-500 text-sm">Available Balance</p>
-          <p className="text-3xl font-bold text-gray-900">₹{balance.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-gray-900">ETB{balance.toLocaleString()}</p>
           <p className="text-xs text-gray-400 mt-1">
-            Minimum withdrawal: ₹{minWithdrawal} | Maximum: ₹{maxWithdrawal.toLocaleString()}
+            Minimum withdrawal: ETB{minWithdrawal} | Maximum: ETB{maxWithdrawal.toLocaleString()}
           </p>
           {balance < minWithdrawal && (
             <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-lg p-2">
               <p className="text-xs text-yellow-800">
-                ⚠️ You need at least ₹{minWithdrawal} to make a withdrawal
+                ⚠️ You need at least ETB{minWithdrawal} to make a withdrawal
               </p>
             </div>
           )}
@@ -154,7 +154,7 @@ const Withdraw = () => {
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount (₹) *
+                Amount (ETB) *
               </label>
               <input
                 type="number"
@@ -182,7 +182,7 @@ const Withdraw = () => {
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 className="input-field"
-                placeholder="e.g., State Bank of India"
+                placeholder="e.g., State Bank of Ethiopia CBE"
                 required
                 disabled={submitting}
               />
@@ -220,7 +220,7 @@ const Withdraw = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                IFSC Code *
+                SWIFT *
               </label>
               <input
                 type="text"
@@ -255,8 +255,8 @@ const Withdraw = () => {
               <p className="font-medium mb-1">Important Notes:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>Withdrawals are processed within 24-48 hours</li>
-                <li>Minimum withdrawal amount is ₹{minWithdrawal}</li>
-                <li>Maximum withdrawal amount is ₹{maxWithdrawal.toLocaleString()}</li>
+                <li>Minimum withdrawal amount is ETB{minWithdrawal}</li>
+                <li>Maximum withdrawal amount is ETB{maxWithdrawal.toLocaleString()}</li>
                 <li>Bank details must match your account</li>
                 <li>Processing fee: Free</li>
               </ul>
@@ -272,8 +272,8 @@ const Withdraw = () => {
               <p className="font-medium mb-1">Tips for faster processing:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>Ensure bank details are correct</li>
-                <li>Account holder name should match your registered name</li>
-                <li>Double-check IFSC code before submitting</li>
+                <li>Account holder name should match your Bank name</li>
+                <li>SWIFT is Optional</li>
               </ul>
             </div>
           </div>

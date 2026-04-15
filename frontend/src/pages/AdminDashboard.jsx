@@ -214,12 +214,12 @@ const AdminDashboard = () => {
                         <p className="font-semibold text-gray-900">{w.user?.name}</p>
                         <p className="text-sm text-gray-500">{w.user?.email}</p>
                       </div>
-                      <span className="text-xl font-bold text-orange-600">₹{w.amount.toLocaleString()}</span>
+                      <span className="text-xl font-bold text-orange-600">ETB{w.amount.toLocaleString()}</span>
                     </div>
                     <div className="text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded-lg">
                       <p>🏦 Bank: {w.bankDetails?.bankName}</p>
                       <p>🔢 Account: {w.bankDetails?.accountNumber}</p>
-                      <p>📇 IFSC: {w.bankDetails?.ifscCode}</p>
+                      <p>📇SWIFT: {w.bankDetails?.ifscCode}</p>
                       <p>👤 Holder: {w.bankDetails?.accountHolder}</p>
                     </div>
                     <div className="flex gap-2">
@@ -258,7 +258,7 @@ const AdminDashboard = () => {
                         <p className="font-semibold text-gray-900">{r.user?.name}</p>
                         <p className="text-sm text-gray-500">{r.user?.email}</p>
                       </div>
-                      <span className="text-xl font-bold text-green-600">₹{r.amount.toLocaleString()}</span>
+                      <span className="text-xl font-bold text-green-600">ETB{r.amount.toLocaleString()}</span>
                     </div>
                     <div className="text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded-lg">
                       <p>🔑 Transaction ID: {r.reference || 'N/A'}</p>
@@ -302,7 +302,7 @@ const AdminDashboard = () => {
                         <p className="text-sm text-gray-500">{req.user?.email}</p>
                       </div>
                       <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                        Invested: ₹{req.user?.totalInvestment?.toLocaleString() || 0}
+                        Invested: ETB{req.user?.totalInvestment?.toLocaleString() || 0}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded-lg">
@@ -338,8 +338,8 @@ const AdminDashboard = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded-lg">
                     <span>🏆 Level: {u.level}</span>
-                    <span>💰 Invested: ₹{u.totalInvestment?.toLocaleString() || 0}</span>
-                    <span>📈 Profit: ₹{u.totalProfit?.toLocaleString() || 0}</span>
+                    <span>💰 Invested: ETB{u.totalInvestment?.toLocaleString() || 0}</span>
+                    <span>📈 Profit: ETB{u.totalProfit?.toLocaleString() || 0}</span>
                     <span>📅 Joined: {new Date(u.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div className="flex gap-2">

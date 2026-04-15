@@ -75,7 +75,7 @@ const Account = () => {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Referral Bonus Earned</span>
-            <span className="font-bold text-green-600">₹{stats?.totalProfit || 0}</span>
+            <span className="font-bold text-green-600">ETB{stats?.totalProfit || 0}</span>
           </div>
         </div>
         
@@ -90,7 +90,7 @@ const Account = () => {
                     <p className="font-medium text-gray-900">{ref.name}</p>
                     <p className="text-xs text-gray-500">{new Date(ref.createdAt).toLocaleDateString()}</p>
                   </div>
-                  <span className="text-sm text-gray-600">₹{ref.totalInvestment || 0}</span>
+                  <span className="text-sm text-gray-600">ETB{ref.totalInvestment || 0}</span>
                 </div>
               ))}
             </div>

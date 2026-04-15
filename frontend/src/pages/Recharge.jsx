@@ -71,7 +71,7 @@ const Recharge = () => {
     }
     
     if (rechargeAmount < 100) {
-      toast.error('Minimum recharge amount is ₹100');
+      toast.error('Minimum recharge amount is ETB100');
       return;
     }
     
@@ -154,7 +154,7 @@ const Recharge = () => {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">IFSC Code:</span>
+                    <span className="text-gray-600">SWIFT:</span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-gray-900">{admin.ifscCode}</span>
                       <button onClick={() => copyText(admin.ifscCode)} className="text-blue-600">
@@ -183,14 +183,14 @@ const Recharge = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Amount to Recharge (₹) *
+                Amount to Recharge (ETB) *
               </label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="input-field"
-                placeholder="Enter amount (Min: ₹100)"
+                placeholder="Enter amount (Min: ETB100)"
                 required
                 min="100"
                 step="100"
@@ -292,7 +292,7 @@ const Recharge = () => {
                 <div key={req._id} className="border-b pb-2">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-gray-900">₹{req.amount.toLocaleString()}</p>
+                      <p className="font-medium text-gray-900">ETB{req.amount.toLocaleString()}</p>
                       <p className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${

@@ -30,7 +30,7 @@ const TransactionSchema = new mongoose.Schema({
     bankName: String,
     accountNumber: String,
     accountHolder: String,
-    ifscCode: String
+   SWIFTCode: String
   },
   adminNotes: String,
   reference: String,

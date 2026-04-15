@@ -52,7 +52,7 @@ const invest = async (req, res) => {
     if (amount < product.minInvestment) {
       return res.status(400).json({
         success: false,
-        message: `Minimum investment is ₹${product.minInvestment}`
+        message: `Minimum investment is ETB${product.minInvestment}`
       });
     }
     
@@ -60,7 +60,7 @@ const invest = async (req, res) => {
     if (product.maxInvestment && amount > product.maxInvestment) {
       return res.status(400).json({
         success: false,
-        message: `Maximum investment is ₹${product.maxInvestment}`
+        message: `Maximum investment is ETB${product.maxInvestment}`
       });
     }
     
