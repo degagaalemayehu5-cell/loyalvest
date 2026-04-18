@@ -42,7 +42,7 @@ const Login = () => {
     let formatted = value.replace(/\D/g, '');
     if (formatted.startsWith('251') && formatted.length > 12) {
       formatted = formatted.slice(0, 12);
-    } else if (formatted.length > 10) {
+    } else if (!formatted.startsWith('251') && formatted.length > 10) {
       formatted = formatted.slice(0, 10);
     }
     setPhone(formatted);
