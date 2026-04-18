@@ -3,12 +3,18 @@ import api from '../utils/api';
 import toast from 'react-hot-toast';
 import { FiTrendingUp, FiCalendar, FiDollarSign } from 'react-icons/fi';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onInvest }) => {
   const [investing, setInvesting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [amount, setAmount] = useState(product.minInvestment);
+  const [amount, setAmount] = useState(product?.minInvestment || 0);
   
   const handleInvest = async () => {
+    // Safe check for product
+    if (!product) {
+      toast.error('Product information not available');
+      return;
+    }
+    
     if (amount < product.minInvestment) {
       toast.error(`Minimum investment is ETB${product.minInvestment}`);
       return;
@@ -28,14 +34,26 @@ const ProductCard = ({ product }) => {
       toast.success('Investment successful!');
       setShowModal(false);
       setAmount(product.minInvestment);
+      
+      // Refresh parent component data
+      if (onInvest) {
+        onInvest();
+      }
     } catch (error) {
+      console.error('Investment error:', error);
       toast.error(error.response?.data?.message || 'Investment failed');
     } finally {
       setInvesting(false);
     }
   };
   
-  const expectedProfit = (amount * product.profitRate) / 100;
+  // Safe calculation with fallback
+  const expectedProfit = (amount * (product?.profitRate || 0)) / 100;
+  
+  // Don't render if product is missing
+  if (!product) {
+    return null;
+  }
   
   return (
     <>
@@ -51,7 +69,7 @@ const ProductCard = ({ product }) => {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-1 text-gray-600">
             <FiDollarSign className="text-xs" />
-            <span>Min: ETB{product.minInvestment.toLocaleString()}</span>
+            <span>Min: ETB{product.minInvestment?.toLocaleString()}</span>
           </div>
           {product.maxInvestment && (
             <div className="flex items-center gap-1 text-gray-600">
@@ -90,6 +108,7 @@ const ProductCard = ({ product }) => {
                   min={product.minInvestment}
                   max={product.maxInvestment || ''}
                   step="100"
+                  disabled={investing}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Min: ETB{product.minInvestment.toLocaleString()} | Max: {product.maxInvestment ? `ETB${product.maxInvestment.toLocaleString()}` : 'Unlimited'}
@@ -98,7 +117,7 @@ const ProductCard = ({ product }) => {
               
               <div className="bg-blue-50 rounded-lg p-3">
                 <p className="text-sm text-gray-600">Expected Returns</p>
-                <p className="text-xl font-bold text-green-600">ETB{expectedProfit.toLocaleString()}</p>
+                <p className="text-xl font-bold text-green-600">ETB{expectedProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 <p className="text-xs text-gray-500">+ ETB{amount.toLocaleString()} principal</p>
               </div>
             </div>
@@ -107,6 +126,7 @@ const ProductCard = ({ product }) => {
               <button
                 onClick={() => setShowModal(false)}
                 className="flex-1 btn-secondary"
+                disabled={investing}
               >
                 Cancel
               </button>
