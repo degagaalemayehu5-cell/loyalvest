@@ -78,6 +78,8 @@ const Settings = () => {
             <input
               type="password"
               placeholder="Current Password"
+              name="currentPassword"
+              id="currentPassword"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               className="input-field"

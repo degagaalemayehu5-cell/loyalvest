@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiShield, FiMail, FiLock } from 'react-icons/fi';
+import { FiShield, FiPhone, FiLock, FiArrowLeft, FiUser } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const AdminLogin = () => {
@@ -11,56 +11,59 @@ const AdminLogin = () => {
   const { login, user, isAuthenticated, fetchUser } = useAuth();
   const navigate = useNavigate();
   
+  // Redirect if already logged in as admin
   useEffect(() => {
-    console.log('AdminLogin - Auth State:', { isAuthenticated, user });
-    
-    // Check localStorage directly
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    console.log('AdminLogin - LocalStorage:', { token: !!token, storedUser });
-    
-    if (token && storedUser) {
-      const userData = JSON.parse(storedUser);
-      if (userData.isAdmin) {
-        console.log('Found admin in localStorage, redirecting');
-        navigate('/admin');
-      }
+    if (isAuthenticated && user?.isAdmin) {
+      navigate('/admin');
+    } else if (isAuthenticated && !user?.isAdmin) {
+      toast.error('Regular users cannot access admin area');
+      navigate('/');
     }
   }, [isAuthenticated, user, navigate]);
   
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-
-  try {
-    const success = await login(phone, password);
-
-    if (success) {
-      // Get the user data from localStorage immediately
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-
-      if (storedUser && !storedUser.isAdmin) {
-        // 1. STOPS THE SPINNING: Clear storage immediately
-        localStorage.clear(); 
-        
-        // 2. Hard redirect to the User Login page
-        // We use window.location.href to kill the state and the spinner instantly
-        window.location.href = '/login?error=user_on_admin_portal'; 
-        return; 
-      } else {
-        // It's a valid Admin
-        toast.success('Admin access granted');
-        navigate('/admin');
-      }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Ethiopian phone validation
+    const phoneRegex = /^(?:\+251|0)[79]\d{8}$/;
+    if (!phoneRegex.test(phone)) {
+      toast.error('Please enter a valid Ethiopian phone number');
+      setLoading(false);
+      return;
     }
-  } catch (error) {
-    console.error('Admin Login error:', error);
-    toast.error('An error occurred during admin login');
-  } finally {
-    // Ensures spinner stops if login fails or role check isn't triggered
+    
+    const success = await login(phone, password);
+    
+    if (success) {
+      setTimeout(async () => {
+        await fetchUser();
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          if (userData.isAdmin) {
+            navigate('/admin');
+          } else {
+            toast.error('This account does not have admin privileges');
+            navigate('/login');
+          }
+        }
+      }, 500);
+    }
+    
     setLoading(false);
-  }
-};
+  };
+  
+  const formatPhoneNumber = (value) => {
+    let formatted = value.replace(/\D/g, '');
+    if (formatted.startsWith('251') && formatted.length > 12) {
+      formatted = formatted.slice(0, 12);
+    } else if (formatted.length > 10) {
+      formatted = formatted.slice(0, 10);
+    }
+    setPhone(formatted);
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -75,36 +78,35 @@ const handleSubmit = async (e) => {
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                Admin phone
+              <label htmlFor="admin-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Phone Number
               </label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type="phone"
+                  type="tel"
+                  id="admin-phone"
+   
                   value={phone}
-                  name="phone"
-                  id="phone"
-                  autoComplete='tel'
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => formatPhoneNumber(e.target.value)}
                   className="input-field pl-10"
-                  placeholder="admin phone"
+                  placeholder="0912345678 or +251912345678"
                   required
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Enter admin registered phone number</p>
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="password"
+                  id="admin-password"
                   value={password}
-                  name="password"    
-                  id="password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field pl-10"
                   placeholder="Enter your password"
@@ -122,11 +124,12 @@ const handleSubmit = async (e) => {
             </button>
           </form>
           
-          <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500">
-              Default Admin: admin@loyalvest.com / Admin@123456
-            </p>
+          <div className="mt-6 pt-4 border-t text-center">
+            <Link to="/login" className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">
+              <FiUser className="text-sm" /> User Login
+            </Link>
           </div>
+         
         </div>
       </div>
     </div>
