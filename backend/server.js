@@ -4,37 +4,46 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
 
-// Middleware
+// ===== IMPORTANT: Body parser MUST come before routes =====
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
-// ===== PWA HEADERS - Add this for better PWA support =====
+// ===== CORS configuration =====
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// ===== Request logging for debugging =====
 app.use((req, res, next) => {
-  // Allow service worker to be registered from any origin
-  if (req.url === '/sw.js') {
-    res.setHeader('Service-Worker-Allowed', '/');
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', req.body);
   }
   next();
 });
 
-// API Routes
+// ===== API Routes =====
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/investments', require('./routes/investmentRoutes'));
 
-// Health check
+// ===== Health check =====
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Server is running' });
+  res.status(200).json({ success: true, message: 'Server is running' });
 });
 
 // ===== PWA SERVICE WORKER & MANIFEST =====
-// Serve service worker with correct headers (must be before static files)
+// Serve service worker with correct headers
 app.get('/sw.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
   res.setHeader('Service-Worker-Allowed', '/');
@@ -52,27 +61,44 @@ app.get('/icons/:icon', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/public/icons', req.params.icon));
 });
 
-// ===== SERVE FRONTEND =====
-// In production, serve the built React app
+// ===== SERVE FRONTEND (Production only) =====
 if (process.env.NODE_ENV === 'production') {
-  // Serve static files from the React build
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
-  
-  // Also serve public folder for static assets
   app.use(express.static(path.join(__dirname, '../frontend/public')));
   
-  // Handle React routing, return all requests to React app
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
   });
 }
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB error:', err));
-
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// ===== Error handling middleware (must be last) =====
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  console.error(err.stack);
+  res.status(500).json({ 
+    success: false, 
+    message: err.message || 'Internal Server Error' 
+  });
 });
+
+// ===== MongoDB Connection =====
+const PORT = process.env.PORT || 5001;
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI is not defined in .env file');
+  process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('✅ MongoDB connected successfully');
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+    });
+  })
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err.message);
+    process.exit(1);
+  });

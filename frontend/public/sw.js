@@ -1,4 +1,4 @@
-const CACHE_NAME = 'loyalvest-v3';
+const CACHE_NAME = 'loyalvest-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -14,6 +14,7 @@ self.addEventListener('install', event => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
+      .catch(err => console.log('Cache add error:', err))
   );
   self.skipWaiting();
 });
@@ -23,15 +24,18 @@ self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
   
-  // Handle API requests - network first
+  // Handle API requests - network first (don't clone response body issues)
   if (event.request.url.includes('/api/')) {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
+          // Only cache successful responses
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
           return response;
         })
         .catch(() => caches.match(event.request))
@@ -43,10 +47,17 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        return response || fetch(event.request).then(fetchResponse => {
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, fetchResponse.clone());
-          });
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).then(fetchResponse => {
+          // Only cache successful responses
+          if (fetchResponse && fetchResponse.status === 200) {
+            const responseToCache = fetchResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
           return fetchResponse;
         });
       })
