@@ -39,11 +39,22 @@ const Login = () => {
   
   const formatPhoneNumber = (value) => {
     // Allow Ethiopian phone number format
-    let formatted = value.replace(/\D/g, '');
-    if (formatted.startsWith('251') && formatted.length > 12) {
-      formatted = formatted.slice(0, 12);
-    } else if (!formatted.startsWith('251') && formatted.length > 10) {
-      formatted = formatted.slice(0, 10);
+    let formatted = value.replace(/[^\d+]/g, ''); // Allow digits and +
+    if (formatted.includes('+') && !formatted.startsWith('+')) {
+      formatted = formatted.replace(/\+/g, ''); // Remove + if not leading
+    }
+    if (formatted.startsWith('+')) {
+      if (formatted.slice(1).startsWith('251') && formatted.length > 13) {
+        formatted = formatted.slice(0, 13);
+      } else if (formatted.length > 11) {
+        formatted = formatted.slice(0, 11);
+      }
+    } else {
+      if (formatted.startsWith('251') && formatted.length > 12) {
+        formatted = formatted.slice(0, 12);
+      } else if (formatted.length > 10) {
+        formatted = formatted.slice(0, 10);
+      }
     }
     setPhone(formatted);
   };
