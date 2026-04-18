@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiPhone, FiLock, FiArrowLeft, FiShield, FiDownload, FiX, FiSmartphone, FiMonitor } from 'react-icons/fi';
+import { FiPhone, FiLock, FiArrowLeft, FiShield, FiDownload, FiX, FiSmartphone } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -11,13 +11,17 @@ const Login = () => {
   const [showInstallPopup, setShowInstallPopup] = useState(false);
   const [platform, setPlatform] = useState('');
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    if (isStandalone) return;
+    if (isStandalone) {
+      setIsInstalled(true);
+      return;
+    }
     
     // Detect platform
     const ua = navigator.userAgent;
@@ -39,6 +43,8 @@ const Login = () => {
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      // Also show popup when install is available
+      setShowInstallPopup(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
     
@@ -54,12 +60,13 @@ const Login = () => {
         toast.success('Installing Loyalvest...');
         setShowInstallPopup(false);
         sessionStorage.setItem('installPopupShown', 'true');
+        setIsInstalled(true);
       }
       setDeferredPrompt(null);
       return;
     }
     
-    // For iOS - show instructions (no automatic install available)
+    // For iOS - show instructions
     if (platform === 'ios') {
       setShowInstallPopup(false);
       alert('📱 How to install Loyalvest on iPhone/iPad:\n\n1. Tap Share button (⬆️)\n2. Scroll down\n3. Tap "Add to Home Screen"\n4. Tap "Add"');
@@ -122,13 +129,13 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+          <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Loyalvest</h1>
             <p className="text-gray-500 mt-2">Login with your phone number</p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                 Phone Number
@@ -140,7 +147,7 @@ const Login = () => {
                   id="phone"
                   value={phone}
                   onChange={(e) => formatPhoneNumber(e.target.value)}
-                  className="input-field pl-10"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-base"
                   placeholder="0912345678 or +251912345678"
                   required
                 />
@@ -159,7 +166,7 @@ const Login = () => {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pl-10"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-base"
                   placeholder="Enter your password"
                   required
                 />
@@ -169,7 +176,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-3 text-lg"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
@@ -189,12 +196,39 @@ const Login = () => {
               <FiShield className="text-sm" /> Admin Login
             </Link>
           </div>
+          
+          {/* VISIBLE INSTALL BUTTON - Always visible, not just popup */}
+          {!isInstalled && (
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <button
+                onClick={handleInstall}
+                className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:from-green-600 hover:to-teal-600 transition-all"
+              >
+                <FiDownload className="w-5 h-5" />
+                {deferredPrompt ? '📲 Install Loyalvest App (One Click)' : '📲 Install Loyalvest App'}
+              </button>
+              <p className="text-xs text-center text-gray-400 mt-2">
+                {platform === 'ios' && '🍎 Tap Share → Add to Home Screen'}
+                {platform === 'android' && '🤖 One-click install available'}
+                {platform === 'desktop' && '💻 Click install in address bar or button above'}
+              </p>
+            </div>
+          )}
+          
+          {/* Already installed message */}
+          {isInstalled && (
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="bg-green-50 text-green-700 text-center py-2 rounded-lg text-sm">
+                ✅ Loyalvest is installed on your device
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
-      {/* Universal Download Popup - Works on ALL Devices */}
-      {showInstallPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+      {/* POPUP - Appears automatically */}
+      {showInstallPopup && !isInstalled && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-slideUp">
             {/* Close button */}
             <button 
@@ -212,13 +246,13 @@ const Login = () => {
             </div>
             
             <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">
-              Get Loyalvest App
+              Install Loyalvest App
             </h2>
             <p className="text-center text-gray-500 text-sm mb-6">
-              Install on your device for best experience
+              Get better experience on your device
             </p>
             
-            {/* Features */}
+            {/* Features - Mobile friendly */}
             <div className="space-y-2 mb-6">
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span className="text-green-500 text-lg">✓</span> One-tap access from home screen
@@ -234,13 +268,13 @@ const Login = () => {
               </div>
             </div>
             
-            {/* Install Button - One click for Android/PC Chrome */}
+            {/* Install Button - Big and clear for mobile */}
             <button
               onClick={handleInstall}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:from-blue-700 hover:to-indigo-700 transition-all"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:from-blue-700 hover:to-indigo-700 transition-all"
             >
-              <FiDownload className="w-5 h-5" />
-              {deferredPrompt ? 'Install Now (One Click)' : 'Install App'}
+              <FiDownload className="w-6 h-6" />
+              {deferredPrompt ? '📲 Install Now (One Click)' : '📲 Install App'}
             </button>
             
             {/* Later button */}
@@ -251,15 +285,16 @@ const Login = () => {
               }}
               className="w-full mt-3 text-gray-400 text-sm py-2 hover:text-gray-600 transition"
             >
-              Not Now
+              Maybe Later
             </button>
             
             {/* Platform-specific instruction */}
             <div className="mt-4 pt-3 border-t border-gray-100 text-center">
               <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-                {platform === 'ios' && <><FiApple className="w-3 h-3" /> Tap Share → Add to Home Screen</>}
-                {platform === 'android' && <><FiSmartphone className="w-3 h-3" /> One-click install available</>}
-                {platform === 'desktop' && <><FiMonitor className="w-3 h-3" /> Click install in address bar</>}
+                <FiSmartphone className="w-3 h-3" />
+                {platform === 'ios' && 'Tap Share (⬆️) → Add to Home Screen'}
+                {platform === 'android' && 'One-click install available above'}
+                {platform === 'desktop' && 'Click install in browser address bar'}
               </p>
             </div>
           </div>
