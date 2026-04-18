@@ -41,12 +41,7 @@ const AdminLayout = ({ children, title, subtitle }) => {
               </div>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => navigate('/')}
-                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm font-medium"
-              >
-                <FiArrowLeft /> Back to App
-              </button>
+              
               <button
                 onClick={handleLogout}
                 className="bg-red-500/20 hover:bg-red-500/30 px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm font-medium"

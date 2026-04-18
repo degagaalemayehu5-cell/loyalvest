@@ -7,13 +7,13 @@ const { validate } = require('../middleware/validate');
 
 router.post('/register', [
   body('name').notEmpty().withMessage('Name is required'),
-  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('phone').isMobilePhone().withMessage('Please provide a valid phone number'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   validate
 ], register);
 
 router.post('/login', [
-  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('phone').isMobilePhone().withMessage('Please provide a valid phone number'),
   body('password').notEmpty().withMessage('Password is required'),
   validate
 ], login);

@@ -212,14 +212,13 @@ const AdminDashboard = () => {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <p className="font-semibold text-gray-900">{w.user?.name}</p>
-                        <p className="text-sm text-gray-500">{w.user?.email}</p>
+                        <p className="text-sm text-gray-500">{w.user?.phone}</p>
                       </div>
                       <span className="text-xl font-bold text-orange-600">ETB{w.amount.toLocaleString()}</span>
                     </div>
                     <div className="text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded-lg">
                       <p>🏦 Bank: {w.bankDetails?.bankName}</p>
                       <p>🔢 Account: {w.bankDetails?.accountNumber}</p>
-                      <p>📇SWIFT: {w.bankDetails?.ifscCode}</p>
                       <p>👤 Holder: {w.bankDetails?.accountHolder}</p>
                     </div>
                     <div className="flex gap-2">
@@ -256,12 +255,12 @@ const AdminDashboard = () => {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <p className="font-semibold text-gray-900">{r.user?.name}</p>
-                        <p className="text-sm text-gray-500">{r.user?.email}</p>
+                        <p className="text-sm text-gray-500">{r.user?.phone}</p>
                       </div>
                       <span className="text-xl font-bold text-green-600">ETB{r.amount.toLocaleString()}</span>
                     </div>
                     <div className="text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded-lg">
-                      <p>🔑 Transaction ID: {r.reference || 'N/A'}</p>
+            
                       <p>📅 Requested: {new Date(r.createdAt).toLocaleString()}</p>
                       <p>💬 Note: {r.adminNotes || 'Awaiting verification'}</p>
                     </div>
@@ -299,7 +298,7 @@ const AdminDashboard = () => {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="font-semibold text-gray-900">{req.user?.name}</p>
-                        <p className="text-sm text-gray-500">{req.user?.email}</p>
+                        <p className="text-sm text-gray-500">{req.user?.phone}</p>
                       </div>
                       <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                         Invested: ETB{req.user?.totalInvestment?.toLocaleString() || 0}
@@ -328,7 +327,7 @@ const AdminDashboard = () => {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="font-semibold text-gray-900">{u.name}</p>
-                      <p className="text-sm text-gray-500">{u.email}</p>
+                      <p className="text-sm text-gray-500">{u.phone}</p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       u.isAdmin ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'

@@ -74,10 +74,6 @@ const Withdraw = () => {
       return;
     }
     
-    if (!ifscCode.trim()) {
-      toast.error('Please enter SWIFT');
-      return;
-    }
     
     setSubmitting(true);
     try {
@@ -86,7 +82,7 @@ const Withdraw = () => {
         bankName: bankName.trim(),
         accountNumber: accountNumber.trim(),
         accountHolder: accountHolder.trim(),
-       SWIFTCode:SWIFTCode.trim().toUpperCase()
+
       });
       
       toast.success('Withdrawal request submitted successfully!');
@@ -182,7 +178,7 @@ const Withdraw = () => {
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 className="input-field"
-                placeholder="e.g., State Bank of Ethiopia CBE"
+                placeholder="e.g.CBE"
                 required
                 disabled={submitting}
               />
@@ -218,21 +214,7 @@ const Withdraw = () => {
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                SWIFT *
-              </label>
-              <input
-                type="text"
-                value={ifscCode}
-                onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
-                className="input-field"
-                placeholder="e.g., SBIN0001234"
-                required
-                disabled={submitting}
-              />
-            </div>
-            
+          
             <button
               type="submit"
               disabled={isButtonDisabled}
@@ -273,7 +255,7 @@ const Withdraw = () => {
               <ul className="list-disc list-inside space-y-1">
                 <li>Ensure bank details are correct</li>
                 <li>Account holder name should match your Bank name</li>
-                <li>SWIFT is Optional</li>
+               
               </ul>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { FiShield, FiMail, FiLock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, user, isAuthenticated, fetchUser } = useAuth();
@@ -28,48 +28,39 @@ const AdminLogin = () => {
     }
   }, [isAuthenticated, user, navigate]);
   
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    console.log('Attempting login with:', email);
-    
-    try {
-      const success = await login(email, password);
-      console.log('Login success:', success);
-      
-      if (success) {
-        // Check localStorage after login
-        setTimeout(() => {
-          const token = localStorage.getItem('token');
-          const storedUser = localStorage.getItem('user');
-          console.log('After login - Token:', !!token);
-          console.log('After login - User:', storedUser);
-          
-          if (storedUser) {
-            const userData = JSON.parse(storedUser);
-            if (userData.isAdmin) {
-              console.log('Admin detected, navigating to /admin');
-              navigate('/admin');
-            } else {
-              toast.error('This account does not have admin privileges');
-              navigate('/');
-            }
-          } else {
-            toast.error('Login failed - no user data');
-          }
-        }, 500);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const success = await login(phone, password);
+
+    if (success) {
+      // Get the user data from localStorage immediately
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+
+      if (storedUser && !storedUser.isAdmin) {
+        // 1. STOPS THE SPINNING: Clear storage immediately
+        localStorage.clear(); 
+        
+        // 2. Hard redirect to the User Login page
+        // We use window.location.href to kill the state and the spinner instantly
+        window.location.href = '/login?error=user_on_admin_portal'; 
+        return; 
       } else {
-        console.log('Login failed');
+        // It's a valid Admin
+        toast.success('Admin access granted');
+        navigate('/admin');
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Login failed');
-    } finally {
-      setLoading(false);
     }
-  };
-  
+  } catch (error) {
+    console.error('Admin Login error:', error);
+    toast.error('An error occurred during admin login');
+  } finally {
+    // Ensures spinner stops if login fails or role check isn't triggered
+    setLoading(false);
+  }
+};
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -84,24 +75,27 @@ const AdminLogin = () => {
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Admin Email
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Admin phone
               </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="phone"
+                  value={phone}
+                  name="phone"
+                  id="phone"
+                  autoComplete='tel'
+                  onChange={(e) => setPhone(e.target.value)}
                   className="input-field pl-10"
-                  placeholder="admin@loyalvest.com"
+                  placeholder="admin phone"
                   required
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -109,6 +103,8 @@ const AdminLogin = () => {
                 <input
                   type="password"
                   value={password}
+                  name="password"    
+                  id="password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field pl-10"
                   placeholder="Enter your password"

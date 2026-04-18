@@ -42,7 +42,7 @@ const getReferralStats = async (req, res) => {
 const getReferralList = async (req, res) => {
   try {
     const referrals = await User.find({ referredBy: req.user.id })
-      .select('name email createdAt totalInvestment totalProfit')
+      .select('name phone createdAt totalInvestment totalProfit')
       .sort({ createdAt: -1 });
     
     res.status(200).json({

@@ -48,35 +48,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
   
-  const login = async (email, password) => {
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user: userData } = response.data;
-      
-      console.log('Login response:', { token: !!token, user: userData });
-      
-      // Store in localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Set axios default header
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
-      // Update state
-      setUser(userData);
-      
-      toast.success('Login successful!');
-      return true;
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error(error.response?.data?.message || 'Login failed');
-      return false;
-    }
-  };
+  const login = async (phone, password) => {
+  try {
+    const response = await api.post('/auth/login', { phone, password });
+    const { token, user: userData } = response.data;
+    
+    // 1. Storage first
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    // 2. Set Axios Header immediately
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    
+    // 3. Update State
+    setUser(userData);
+    
+    return true; 
+  } catch (error) {
+    // ... error handling
+  }
+};
   
-  const register = async (name, email, password, referralCode) => {
+  const register = async (name, phone, password, referralCode) => {
     try {
-      const response = await api.post('/auth/register', { name, email, password, referralCode });
+      const response = await api.post('/auth/register', { name, phone, password, referralCode });
       const { token, user: userData } = response.data;
       
       localStorage.setItem('token', token);
@@ -115,7 +110,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user || !!localStorage.getItem('token'),
     login,
     register,
     logout,

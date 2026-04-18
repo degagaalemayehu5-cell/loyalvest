@@ -23,14 +23,14 @@ const TransactionSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['bank_transfer', 'upi', 'cash', 'investment', 'referral'],
+    enum: ['bank_transfer', 'cash', 'investment', 'referral'],
     default: 'bank_transfer'
   },
   bankDetails: {
     bankName: String,
     accountNumber: String,
     accountHolder: String,
-   SWIFTCode: String
+
   },
   adminNotes: String,
   reference: String,

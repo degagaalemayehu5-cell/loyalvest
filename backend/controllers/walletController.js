@@ -2,6 +2,7 @@ const Wallet = require('../models/Wallet');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const { MIN_WITHDRAWAL, MAX_WITHDRAWAL } = require('../config/constants');
+const { updateUserLevelByBalance } = require('../utils/calculateProfit');
 
 // @desc    Get wallet balance
 // @route   GET /api/wallet/balance
@@ -29,7 +30,7 @@ const getBalance = async (req, res) => {
 // @access  Private
 const requestWithdrawal = async (req, res) => {
   try {
-    const { amount, bankName, accountNumber, accountHolder,SWIFTCode } = req.body;
+    const { amount, bankName, accountNumber, accountHolder, SWIFTCode } = req.body;
     
     // Validate amount
     if (!amount || amount < MIN_WITHDRAWAL) {
@@ -66,7 +67,7 @@ const requestWithdrawal = async (req, res) => {
         bankName,
         accountNumber,
         accountHolder,
-       SWIFTCode
+        SWIFTCode
       }
     });
     
@@ -75,10 +76,14 @@ const requestWithdrawal = async (req, res) => {
     wallet.pendingWithdrawals += amount;
     await wallet.save();
     
+    // Update user level based on new balance
+    await updateUserLevelByBalance(req.user.id);
+    
     res.status(201).json({
       success: true,
       message: 'Withdrawal request submitted successfully',
-      transaction
+      transaction,
+      newBalance: wallet.balance
     });
   } catch (error) {
     console.error(error);
@@ -100,13 +105,6 @@ const submitRechargeRequest = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Minimum recharge amount is ETB100'
-      });
-    }
-    
-    if (!transactionId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Transaction ID is required'
       });
     }
     
@@ -146,25 +144,23 @@ const getRechargeInfo = async (req, res) => {
     const rechargeInfo = {
       adminAccounts: [
         {
-          bankName: "State Bank of Ethiopia CBE",
+          bankName: "CBE",
           accountHolder: "Loyalvest Investments",
+          realname: "Degaga Alemayehu",
           accountNumber: "1000464654252",
-         SWIFTCode: "SBIN0012345",
-          upiId: "loyalvest@okhdfcbank",
           adminName: "Admin Team"
         },
         {
-          bankName: "HDFC Bank",
+          bankName: "Awash Bank",
           accountHolder: "Loyalvest Investments",
+          realname: "Cherinet Abebe",
           accountNumber: "98765432109",
-         SWIFTCode: "HDFC0001234",
-          upiId: "loyalvest@hdfcbank",
           adminName: "Admin Team"
         }
       ],
       instructions: [
         'Transfer the exact amount to any of the bank accounts above',
-        'Use your registered email as reference',
+        'Use your registered phone as reference',
         'Keep the transaction ID for submission',
         'Upload clear screenshot of payment confirmation',
         'Amount will be credited within 24 hours after verification'
@@ -221,10 +217,69 @@ const getTransactions = async (req, res) => {
   }
 };
 
+// @desc    Approve recharge (admin only - add to wallet and update level)
+// @route   PUT /api/wallet/approve-recharge/:id
+// @access  Private/Admin
+const approveRecharge = async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+    
+    if (!transaction || transaction.type !== 'recharge') {
+      return res.status(404).json({
+        success: false,
+        message: 'Recharge transaction not found'
+      });
+    }
+    
+    if (transaction.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Transaction already processed'
+      });
+    }
+    
+    // Update transaction
+    transaction.status = 'approved';
+    transaction.processedBy = req.user.id;
+    transaction.processedAt = Date.now();
+    await transaction.save();
+    
+    // Add amount to user's wallet
+    let wallet = await Wallet.findOne({ user: transaction.user });
+    if (wallet) {
+      wallet.balance += transaction.amount;
+      wallet.totalRecharged += transaction.amount;
+      await wallet.save();
+    } else {
+      wallet = await Wallet.create({
+        user: transaction.user,
+        balance: transaction.amount,
+        totalRecharged: transaction.amount
+      });
+    }
+    
+    // Update user level based on new balance
+    await updateUserLevelByBalance(transaction.user);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Recharge approved and amount credited',
+      newBalance: wallet.balance
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error'
+    });
+  }
+};
+
 module.exports = {
   getBalance,
   requestWithdrawal,
   submitRechargeRequest,
   getRechargeInfo,
-  getTransactions
+  getTransactions,
+  approveRecharge
 };

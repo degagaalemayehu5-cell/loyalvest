@@ -12,7 +12,7 @@ const getPendingWithdrawals = async (req, res) => {
     const withdrawals = await Transaction.find({
       type: 'withdraw',
       status: 'pending'
-    }).populate('user', 'name email');
+    }).populate('user', 'name phone');
     
     res.status(200).json({
       success: true,
@@ -131,7 +131,7 @@ const getPendingRecharges = async (req, res) => {
     const recharges = await Transaction.find({
       type: 'recharge',
       status: 'pending'
-    }).populate('user', 'name email').sort({ createdAt: -1 });
+    }).populate('user', 'name phone').sort({ createdAt: -1 });
     
     res.status(200).json({
       success: true,
@@ -251,7 +251,7 @@ const rejectRecharge = async (req, res) => {
 const getPendingAdminRequests = async (req, res) => {
   try {
     const requests = await AdminRequest.find({ status: 'pending' })
-      .populate('user', 'name email totalInvestment totalProfit');
+      .populate('user', 'name phone totalInvestment totalProfit');
     
     res.status(200).json({
       success: true,

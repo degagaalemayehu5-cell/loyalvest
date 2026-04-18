@@ -5,7 +5,7 @@ import { FiUser, FiMail, FiLock, FiGift } from 'react-icons/fi';
 
 const Register = () => {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
@@ -22,7 +22,7 @@ const Register = () => {
     }
     
     setLoading(true);
-    const success = await register(name, email, password, referralCode);
+    const success = await register(name, phone, password, referralCode);
     setLoading(false);
     if (success) {
       navigate('/');
@@ -40,7 +40,7 @@ const Register = () => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name
               </label>
               <div className="relative">
@@ -48,6 +48,9 @@ const Register = () => {
                 <input
                   type="text"
                   value={name}
+                  name ="name"
+                  id="name"
+                  autoComplete='name'
                   onChange={(e) => setName(e.target.value)}
                   className="input-field pl-10"
                   placeholder="Enter your full name"
@@ -57,24 +60,27 @@ const Register = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                phone Numbers
               </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="phone"
+                  name="phone" 
+                  id="phone"
+                  autoComplete='tel'
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="input-field pl-10"
-                  placeholder="Enter your email"
+                  placeholder="Enter your phone"
                   required
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -82,6 +88,8 @@ const Register = () => {
                 <input
                   type="password"
                   value={password}
+                  name="password"
+                  id="password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="input-field pl-10"
                   placeholder="Create a password"
@@ -91,7 +99,7 @@ const Register = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -99,6 +107,8 @@ const Register = () => {
                 <input
                   type="password"
                   value={confirmPassword}
+                  name="confirmPassword"
+                  id="confirmPassword"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="input-field pl-10"
                   placeholder="Confirm your password"
@@ -108,7 +118,7 @@ const Register = () => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-2">
                 Referral Code (Optional)
               </label>
               <div className="relative">
@@ -116,6 +126,9 @@ const Register = () => {
                 <input
                   type="text"
                   value={referralCode}
+                  name="referralCode"
+                  id="referralCode"
+
                   onChange={(e) => setReferralCode(e.target.value)}
                   className="input-field pl-10"
                   placeholder="Enter referral code"

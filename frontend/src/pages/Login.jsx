@@ -1,25 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiMail, FiLock, FiArrowLeft } from 'react-icons/fi';
+import { FiPhone, FiLock, FiArrowLeft } from 'react-icons/fi'; // Changed FiMail to FiPhone
+import toast from 'react-hot-toast'; // Added missing import
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth(); // Added isAuthenticated
   const navigate = useNavigate();
-  
+
+  // Redirect if already logged in (prevents layering)
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const success = await login(email, password);
-    setLoading(false);
-    if (success) {
-      navigate('/');
+
+    try {
+      const success = await login(phone, password);
+
+      if (success) {
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+
+        if (storedUser && storedUser.isAdmin) {
+          localStorage.clear(); 
+          window.location.href = '/admin-login?error=admin_attempt'; 
+          return;
+        } else {
+          toast.success('Login successful!');
+          // Using window.location.href ensures the Login component 
+          // is physically removed from the browser memory.
+          window.location.href = '/'; 
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred during login');
+    } finally {
+      setLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -31,24 +58,24 @@ const Login = () => {
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
               </label>
               <div className="relative">
-                <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input-field pl-10"
-                  placeholder="Enter your email"
+                  type="tel" // Changed from 'phone' to 'tel'
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="input-field pl-10 w-full"
+                  placeholder="09..."
                   required
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -57,7 +84,7 @@ const Login = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pl-10"
+                  className="input-field pl-10 w-full"
                   placeholder="Enter your password"
                   required
                 />
@@ -67,9 +94,13 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-3 text-lg"
+              className="btn-primary w-full py-3 text-lg flex justify-center items-center"
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                'Login'
+              )}
             </button>
           </form>
           

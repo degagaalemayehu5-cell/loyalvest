@@ -1,10 +1,10 @@
 module.exports = {
   USER_LEVELS: {
-    BRONZE: { name: 'Bronze', minInvestment: 0, maxInvestment: 999, profitRate: 0.05, color: '#CD7F32' },
-    SILVER: { name: 'Silver', minInvestment: 1000, maxInvestment: 4999, profitRate: 0.08, color: '#C0C0C0' },
-    GOLD: { name: 'Gold', minInvestment: 5000, maxInvestment: 19999, profitRate: 0.12, color: '#FFD700' },
-    PLATINUM: { name: 'Platinum', minInvestment: 20000, maxInvestment: 49999, profitRate: 0.15, color: '#E5E4E2' },
-    DIAMOND: { name: 'Diamond', minInvestment: 50000, maxInvestment: Infinity, profitRate: 0.20, color: '#B9F2FF' }
+    BRONZE: { name: 'Bronze', minBalance: 0, maxBalance: 999, profitRate: 5, color: '#CD7F32', benefits: ['Basic support', '5% profit rate'] },
+    SILVER: { name: 'Silver', minBalance: 1000, maxBalance: 4999, profitRate: 8, color: '#C0C0C0', benefits: ['Priority support', '8% profit rate', 'Monthly bonus'] },
+    GOLD: { name: 'Gold', minBalance: 5000, maxBalance: 19999, profitRate: 12, color: '#FFD700', benefits: ['VIP support', '12% profit rate', 'Weekly bonus', 'Lower fees'] },
+    PLATINUM: { name: 'Platinum', minBalance: 20000, maxBalance: 49999, profitRate: 15, color: '#E5E4E2', benefits: ['Dedicated manager', '15% profit rate', 'Daily bonus', 'No fees'] },
+    DIAMOND: { name: 'Diamond', minBalance: 50000, maxBalance: Infinity, profitRate: 20, color: '#B9F2FF', benefits: ['Personal advisor', '20% profit rate', 'Hourly bonus', 'Exclusive products', 'Profit sharing'] }
   },
   
   TRANSACTION_STATUS: {

@@ -16,10 +16,10 @@ const generateToken = (id) => {
 // @access  Public
 const register = async (req, res) => {
   try {
-    const { name, email, password, referralCode } = req.body;
+    const { name, phone, password, referralCode } = req.body;
 
     // Check if user exists
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ phone });
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -30,7 +30,7 @@ const register = async (req, res) => {
     // Create user
     const user = await User.create({
       name,
-      email,
+      phone,
       password
     });
 
@@ -75,7 +75,7 @@ const register = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email,
+        phone: user.phone,
         referralCode: user.referralCode,
         level: user.level,
         isAdmin: user.isAdmin
@@ -96,10 +96,10 @@ const register = async (req, res) => {
 // @access  Public
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { phone, password } = req.body;
 
     // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ phone }).select('+password');
     
     if (!user) {
       return res.status(401).json({
@@ -135,7 +135,7 @@ const login = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email,
+        phone: user.phone,
         referralCode: user.referralCode,
         level: user.level,
         isAdmin: user.isAdmin,

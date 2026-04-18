@@ -21,7 +21,7 @@ import BottomNav from './components/BottomNav';
 import AIChatbot from './components/AIChatbot';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   
   if (loading) {
     return (
@@ -29,6 +29,11 @@ const ProtectedRoute = ({ children }) => {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
+  }
+  
+  // NEW LOGIC: If authenticated but IS an admin, kick them to the admin dashboard
+  if (isAuthenticated && user?.isAdmin) {
+    return <Navigate to="/admin" replace />;
   }
   
   return isAuthenticated ? children : <Navigate to="/login" replace />;

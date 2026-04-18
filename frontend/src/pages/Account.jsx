@@ -99,34 +99,6 @@ const Account = () => {
         
         {/* Pending Orders */}
         <PendingOrderList />
-        
-        {/* Admin Request */}
-        {!user?.isAdmin && (
-          <div className="card">
-            <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-              <FiShield className="text-purple-600" /> Become an Admin
-            </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Request admin access to help manage the platform.
-            </p>
-            <button
-              onClick={async () => {
-                const reason = prompt('Why do you want to become an admin?');
-                if (reason) {
-                  try {
-                    await api.post('/users/request-admin', { reason });
-                    toast.success('Admin request submitted!');
-                  } catch (error) {
-                    toast.error(error.response?.data?.message || 'Failed to submit request');
-                  }
-                }
-              }}
-              className="btn-secondary w-full"
-            >
-              Request Admin Access
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

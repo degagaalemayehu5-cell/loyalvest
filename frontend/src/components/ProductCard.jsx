@@ -51,12 +51,12 @@ const ProductCard = ({ product }) => {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-1 text-gray-600">
             <FiDollarSign className="text-xs" />
-            <span>Min: ETB{product.minInvestment}</span>
+            <span>Min: ETB{product.minInvestment.toLocaleString()}</span>
           </div>
           {product.maxInvestment && (
             <div className="flex items-center gap-1 text-gray-600">
               <FiDollarSign className="text-xs" />
-              <span>Max: ETB{product.maxInvestment}</span>
+              <span>Max: ETB{product.maxInvestment.toLocaleString()}</span>
             </div>
           )}
           <div className="flex items-center gap-1 text-gray-600">
@@ -92,7 +92,7 @@ const ProductCard = ({ product }) => {
                   step="100"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Min: ETB{product.minInvestment} | Max: {product.maxInvestment ? `ETB${product.maxInvestment}` : 'Unlimited'}
+                  Min: ETB{product.minInvestment.toLocaleString()} | Max: {product.maxInvestment ? `ETB${product.maxInvestment.toLocaleString()}` : 'Unlimited'}
                 </p>
               </div>
               

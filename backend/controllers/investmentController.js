@@ -4,7 +4,12 @@ const Wallet = require('../models/Wallet');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const { USER_LEVELS } = require('../config/constants');
-const { calculateDailyProfit, updateUserLevel } = require('../utils/calculateProfit');
+const { 
+  calculateDailyProfit, 
+  updateUserLevel,
+  getAccruedProfit,
+  claimAccruedProfit
+} = require('../utils/calculateProfit');
 
 // @desc    Get available products
 // @route   GET /api/investments/products
@@ -39,6 +44,8 @@ const getProducts = async (req, res) => {
 const invest = async (req, res) => {
   try {
     const { productId, amount } = req.body;
+    
+    console.log('Investment request:', { productId, amount, userId: req.user.id });
     
     const product = await Product.findById(productId);
     if (!product) {
@@ -86,7 +93,9 @@ const invest = async (req, res) => {
       product: productId,
       amount,
       endDate,
-      lastProfitCalculated: new Date()
+      lastProfitCalculated: new Date(),
+      status: 'active',
+      profitEarned: 0
     });
     
     // Update user total investment
@@ -97,25 +106,36 @@ const invest = async (req, res) => {
     // Update user level based on total investment
     await updateUserLevel(req.user.id);
     
-    // Create transaction record
+    // Create transaction record for the investment
     await Transaction.create({
       user: req.user.id,
-      type: 'recharge',
+      type: 'investment',
       amount,
       status: 'approved',
-      paymentMethod: 'investment'
+      paymentMethod: 'wallet',
+      reference: investment._id.toString()
     });
+    
+    console.log('Investment successful:', investment._id);
     
     res.status(201).json({
       success: true,
       message: 'Investment successful',
-      investment
+      investment: {
+        id: investment._id,
+        amount: investment.amount,
+        product: product.name,
+        profitRate: product.profitRate,
+        duration: product.duration,
+        endDate: investment.endDate
+      },
+      newBalance: wallet.balance
     });
   } catch (error) {
-    console.error(error);
+    console.error('Investment error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error'
+      message: 'Server Error: ' + error.message
     });
   }
 };
@@ -145,6 +165,95 @@ const getMyInvestments = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server Error'
+    });
+  }
+};
+
+// @desc    Get real-time profit for user
+// @route   GET /api/investments/real-time-profit
+// @access  Private
+const getRealTimeProfit = async (req, res) => {
+  try {
+    const accruedProfit = await getAccruedProfit(req.user.id);
+    
+    const investments = await Investment.find({ 
+      user: req.user.id,
+      status: 'active',
+      endDate: { $gt: new Date() }
+    }).populate('product');
+    
+    const investmentDetails = [];
+    for (const investment of investments) {
+      const now = new Date();
+      const lastCalc = investment.lastProfitCalculated || investment.startDate;
+      const hoursSinceLastCalc = (now - lastCalc) / (1000 * 60 * 60);
+      
+      const totalProfit = investment.amount * (investment.product.profitRate / 100);
+      const hourlyProfit = totalProfit / (30 * 24);
+      const accruedForThis = hourlyProfit * hoursSinceLastCalc;
+      
+      const totalEarned = (investment.profitEarned || 0) + accruedForThis;
+      const targetProfit = investment.amount * (investment.product.profitRate / 100);
+      const progress = (totalEarned / targetProfit) * 100;
+      
+      investmentDetails.push({
+        id: investment._id,
+        productName: investment.product.name,
+        amount: investment.amount,
+        profitRate: investment.product.profitRate,
+        earnedProfit: investment.profitEarned || 0,
+        accruedProfit: Math.max(0, accruedForThis),
+        totalProfit: totalEarned,
+        progress: Math.min(100, progress),
+        duration: investment.product.duration,
+        endDate: investment.endDate
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      totalAccruedProfit: Math.max(0, accruedProfit),
+      investments: investmentDetails,
+      lastUpdated: new Date()
+    });
+  } catch (error) {
+    console.error('Real-time profit error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error'
+    });
+  }
+};
+
+// @desc    Claim accrued profit
+// @route   POST /api/investments/claim-profit
+// @access  Private
+const claimProfit = async (req, res) => {
+  try {
+    const claimedAmount = await claimAccruedProfit(req.user.id);
+    
+    const wallet = await Wallet.findOne({ user: req.user.id });
+    
+    if (claimedAmount > 0) {
+      res.status(200).json({
+        success: true,
+        message: `Claimed ETB${claimedAmount.toFixed(2)} profit`,
+        claimedAmount: claimedAmount,
+        newBalance: wallet?.balance || 0
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: 'No profit to claim',
+        claimedAmount: 0,
+        newBalance: wallet?.balance || 0
+      });
+    }
+  } catch (error) {
+    console.error('Claim profit error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error: ' + error.message
     });
   }
 };
@@ -217,5 +326,7 @@ module.exports = {
   getProducts,
   invest,
   getMyInvestments,
+  getRealTimeProfit,
+  claimProfit,
   calculateAllProfit
 };

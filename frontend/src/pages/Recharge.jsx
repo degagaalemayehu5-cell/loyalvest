@@ -75,11 +75,6 @@ const Recharge = () => {
       return;
     }
     
-    if (!transactionId.trim()) {
-      toast.error('Please enter transaction ID/Reference');
-      return;
-    }
-    
     if (!screenshot) {
       toast.error('Please upload payment screenshot');
       return;
@@ -154,23 +149,15 @@ const Recharge = () => {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">SWIFT:</span>
+                      <span className="text-gray-600">Real Name:</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-gray-900">{admin.ifscCode}</span>
-                      <button onClick={() => copyText(admin.ifscCode)} className="text-blue-600">
+                      <span className="font-mono text-gray-900">{admin.realname}</span>
+                      <button onClick={() => copyText(admin.realname)} className="text-blue-600">
                         <FiCopy className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">UPI ID:</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-gray-900">{admin.upiId || 'admin@loyalvest'}</span>
-                      <button onClick={() => copyText(admin.upiId || 'admin@loyalvest')} className="text-blue-600">
-                        <FiCopy className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+                  
                 </div>
               </div>
             ))}
@@ -197,19 +184,7 @@ const Recharge = () => {
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Transaction ID / Reference Number *
-              </label>
-              <input
-                type="text"
-                value={transactionId}
-                onChange={(e) => setTransactionId(e.target.value)}
-                className="input-field"
-                placeholder="Enter transaction ID from your bank/UPI"
-                required
-              />
-            </div>
+            
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -271,7 +246,7 @@ const Recharge = () => {
               <p className="font-medium mb-1">How to Recharge:</p>
               <ol className="list-decimal list-inside space-y-1">
                 <li>Transfer the amount to any of the admin bank accounts above</li>
-                <li>Use your registered email as reference (optional)</li>
+                <li>Use your registered phone as reference (optional)</li>
                 <li>Take a screenshot of the payment confirmation</li>
                 <li>Fill the form above with transaction details</li>
                 <li>Upload the screenshot and submit</li>

@@ -15,30 +15,38 @@ const createAdmin = async () => {
     console.log('📡 Connecting to MongoDB...');
     
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    // Add this inside your try block in createAdmin.js
+await mongoose.connect(process.env.MONGODB_URI);
+console.log('✅ Connected to MongoDB');
+
+// Force drop the old email index
+try {
+    await User.collection.dropIndex('email_1');
+    console.log('🗑️ Old email index dropped successfully');
+} catch (err) {
+    console.log('ℹ️ Email index already gone or not found');
+}
 
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ email: 'admin@loyalvest.com' });
+    const existingAdmin = await User.findOne({ phone: '0704207117' });
     if (existingAdmin) {
       console.log('\n⚠️ Admin already exists!');
       console.log('=================================');
-      console.log('📧 Email: admin@loyalvest.com');
+      console.log('📧 Phone: 0704207117');
       console.log('🔑 You can login with your existing password');
       console.log('=================================\n');
       process.exit();
     }
 
     // Hash password
-    const plainPassword = 'Admin@123456';
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(plainPassword, salt);
+    const plainPassword = '357415963';
+
 
     // Create admin user
     const admin = await User.create({
       name: 'System Administrator',
-      email: 'admin@loyalvest.com',
-      password: hashedPassword,
+      phone: '0704207117',
+      password: plainPassword,
       referralCode: 'ADMIN' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       isAdmin: true,
       isActive: true,
@@ -47,19 +55,11 @@ const createAdmin = async () => {
       totalProfit: 0
     });
 
-    // Create wallet for admin
-    await Wallet.create({
-      user: admin._id,
-      balance: 0,
-      totalRecharged: 0,
-      totalWithdrawn: 0,
-      pendingWithdrawals: 0
-    });
 
     console.log('\n🎉 Admin created successfully!');
     console.log('=================================');
-    console.log('📧 Email: admin@loyalvest.com');
-    console.log('🔑 Password: Admin@123456');
+    console.log('📧 Phone: 0704207117');
+    console.log('🔑 Password: 357415963');
     console.log('🆔 Admin ID:', admin._id.toString());
     console.log('=================================');
     console.log('\n🌐 You can now login at: http://localhost:5173/admin-login');
