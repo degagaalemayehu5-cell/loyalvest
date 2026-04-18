@@ -106,15 +106,15 @@ const invest = async (req, res) => {
     // Update user level based on total investment
     await updateUserLevel(req.user.id);
     
-    // Create transaction record for the investment
-    await Transaction.create({
-      user: req.user.id,
-      type: 'investment',
-      amount,
-      status: 'approved',
-      paymentMethod: 'wallet',
-      reference: investment._id.toString()
-    });
+    // Create transaction record - FIXED
+await Transaction.create({
+  user: req.user.id,
+  type: 'investment',
+  amount: amount,
+  status: 'approved',
+  paymentMethod: 'investment',
+  reference: investment._id.toString()
+});
     
     console.log('Investment successful:', investment._id);
     

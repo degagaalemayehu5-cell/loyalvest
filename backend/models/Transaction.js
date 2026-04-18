@@ -8,7 +8,7 @@ const TransactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['recharge', 'withdraw', 'profit', 'referral_bonus'],
+    enum: ['recharge', 'withdraw', 'profit', 'referral_bonus', 'investment'],
     required: true
   },
   amount: {
@@ -23,14 +23,14 @@ const TransactionSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['bank_transfer', 'cash', 'investment', 'referral'],
+    enum: ['bank_transfer', 'upi', 'cash', 'investment', 'wallet', 'referral'],
     default: 'bank_transfer'
   },
   bankDetails: {
     bankName: String,
     accountNumber: String,
     accountHolder: String,
-
+    ifscCode: String
   },
   adminNotes: String,
   reference: String,
