@@ -58,5 +58,21 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Invest",
+      "short_name": "Invest",
+      "description": "Start investing",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Wallet",
+      "short_name": "Wallet",
+      "description": "Check your wallet",
+      "url": "/account",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    }
   ]
 }

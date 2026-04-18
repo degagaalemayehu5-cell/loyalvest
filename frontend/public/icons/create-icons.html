@@ -9,31 +9,38 @@
     <script>
         const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
         
-        sizes.forEach(size => {
-            const canvas = document.getElementById('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            
-            // Background
-            ctx.fillStyle = '#3b82f6';
-            ctx.fillRect(0, 0, size, size);
-            
-            // Text
-            ctx.fillStyle = 'white';
-            ctx.font = `Bold ${size * 0.4}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('L', size/2, size/2);
-            
-            // Download
-            const link = document.createElement('a');
-            link.download = `icon-${size}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-        });
+        async function createIcons() {
+            for (const size of sizes) {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                
+                // Background
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(0, 0, size, size);
+                
+                // Text
+                ctx.fillStyle = 'white';
+                ctx.font = `Bold ${size * 0.4}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('L', size/2, size/2);
+                
+                // Download
+                const link = document.createElement('a');
+                link.download = `icon-${size}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                
+                // Wait a bit between downloads
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
         
-        document.body.innerHTML = '<h1>Icons created! Check your downloads folder.</h1>';
+        createIcons().then(() => {
+            document.body.innerHTML = '<h1>Icons created! Check your downloads folder.</h1><p>Move them to frontend/public/icons/ folder</p>';
+        });
     </script>
 </body>
 </html>
