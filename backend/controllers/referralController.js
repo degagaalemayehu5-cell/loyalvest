@@ -1,7 +1,53 @@
 const Referral = require('../models/Referral');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Wallet = require('../models/Wallet');
 const { REFERRAL_BONUS_AMOUNT } = require('../config/constants');
+
+// @desc    Create referral when user registers
+// @route   Called from auth controller
+// @access  Internal
+const createReferral = async (referrerId, referredId) => {
+  try {
+    // Create referral record
+    const referral = await Referral.create({
+      referrer: referrerId,
+      referred: referredId,
+      bonusAmount: REFERRAL_BONUS_AMOUNT,
+      status: 'pending'
+    });
+
+    // Add bonus to referrer's wallet
+    const wallet = await Wallet.findOne({ user: referrerId });
+    if (wallet) {
+      wallet.balance += REFERRAL_BONUS_AMOUNT;
+      wallet.totalRecharged += REFERRAL_BONUS_AMOUNT;
+      await wallet.save();
+
+      // Update referral status to paid
+      referral.status = 'paid';
+      await referral.save();
+
+      // Create transaction record for the bonus
+      await Transaction.create({
+        user: referrerId,
+        type: 'referral_bonus',
+        amount: REFERRAL_BONUS_AMOUNT,
+        status: 'approved',
+        paymentMethod: 'referral',
+        reference: referredId.toString(),
+        description: `Referral bonus for inviting new user`
+      });
+
+      console.log(`✅ Referral bonus of ETB${REFERRAL_BONUS_AMOUNT} added to user ${referrerId}`);
+    }
+
+    return referral;
+  } catch (error) {
+    console.error('Create referral error:', error);
+    return null;
+  }
+};
 
 // @desc    Get referral stats
 // @route   GET /api/referrals/stats
@@ -59,6 +105,7 @@ const getReferralList = async (req, res) => {
 };
 
 module.exports = {
+  createReferral,
   getReferralStats,
   getReferralList
 };

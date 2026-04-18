@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Wallet = require('../models/Wallet');
 const Referral = require('../models/Referral');
+const Transaction = require('../models/Transaction');
 const jwt = require('jsonwebtoken');
 const { REFERRAL_BONUS_AMOUNT } = require('../config/constants');
 
@@ -11,19 +12,21 @@ const generateToken = (id) => {
   });
 };
 
-// @desc    Register user
+// @desc    Register user with phone
 // @route   POST /api/auth/register
 // @access  Public
 const register = async (req, res) => {
   try {
     const { name, phone, password, referralCode } = req.body;
 
+    console.log('Registration attempt:', { name, phone, referralCode });
+
     // Check if user exists
     const userExists = await User.findOne({ phone });
     if (userExists) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists'
+        message: 'User with this phone number already exists'
       });
     }
 
@@ -34,21 +37,13 @@ const register = async (req, res) => {
       password
     });
 
-    // Handle referral
-    let referrer = null;
+    // Handle referral - ADD BONUS TO REFERRER
     if (referralCode) {
-      referrer = await User.findOne({ referralCode });
+      const referrer = await User.findOne({ referralCode });
       if (referrer) {
+        // Set referred by
         user.referredBy = referrer._id;
         await user.save();
-
-        // Create referral record
-        await Referral.create({
-          referrer: referrer._id,
-          referred: user._id,
-          bonusAmount: REFERRAL_BONUS_AMOUNT,
-          status: 'pending'
-        });
 
         // Add bonus to referrer's wallet
         const referrerWallet = await Wallet.findOne({ user: referrer._id });
@@ -56,7 +51,29 @@ const register = async (req, res) => {
           referrerWallet.balance += REFERRAL_BONUS_AMOUNT;
           referrerWallet.totalRecharged += REFERRAL_BONUS_AMOUNT;
           await referrerWallet.save();
+          console.log(`✅ Added ETB${REFERRAL_BONUS_AMOUNT} to ${referrer.name} for referring ${user.name}`);
         }
+
+        // Create referral record
+        await Referral.create({
+          referrer: referrer._id,
+          referred: user._id,
+          bonusAmount: REFERRAL_BONUS_AMOUNT,
+          status: 'paid'
+        });
+
+        // Create transaction record for the bonus
+        await Transaction.create({
+          user: referrer._id,
+          type: 'referral_bonus',
+          amount: REFERRAL_BONUS_AMOUNT,
+          status: 'approved',
+          paymentMethod: 'referral',
+          reference: user._id.toString(),
+          description: `Referral bonus for inviting ${user.name}`
+        });
+
+        console.log(`✅ Referral bonus transaction created for ${referrer.name}`);
       }
     }
 
@@ -82,14 +99,14 @@ const register = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
-      error: error.message
+      message: 'Server Error: ' + error.message
     });
   }
 };
+
 
 // @desc    Login user
 // @route   POST /api/auth/login

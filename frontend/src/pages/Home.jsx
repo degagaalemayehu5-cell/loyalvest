@@ -22,22 +22,23 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
   
   const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
       const [productsRes, statsRes] = await Promise.all([
         api.get('/investments/products'),
         api.get('/users/stats')
       ]);
       
-      // FIX: Check if products exists before setting
-      if (productsRes?.data?.products) {
+      if (productsRes.data && productsRes.data.products) {
         setProducts(productsRes.data.products);
       } else {
         setProducts([]);
       }
       
-      if (statsRes?.data?.stats) {
-        setStats(prev => ({ ...prev, ...statsRes.data.stats }));
+      if (statsRes.data && statsRes.data.stats) {
+        setStats(statsRes.data.stats);
       }
+      
     } catch (error) {
       console.error('Fetch data error:', error);
       toast.error('Failed to load data');
@@ -55,10 +56,10 @@ const Home = () => {
   const handleRefresh = () => {
     setRefreshing(true);
     fetchData();
+    toast.success('Refreshing data...');
   };
   
-  // FIX: This is the key - safe check before using .length
-  const hasProducts = products && Array.isArray(products) && products.length > 0;
+  const hasProducts = products && products.length > 0;
   
   if (loading) {
     return (
@@ -107,7 +108,7 @@ const Home = () => {
           </div>
         </div>
         
-        {/* Investment Products - FIXED LINE 71 */}
+        {/* Investment Products */}
         <div>
           <h2 className="text-lg font-bold text-gray-900 mb-3">Investment Plans</h2>
           {hasProducts ? (

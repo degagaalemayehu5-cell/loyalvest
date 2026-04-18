@@ -71,29 +71,40 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Get user stats (with level check)
+// @desc    Get user stats
 // @route   GET /api/users/stats
 // @access  Private
 const getUserStats = async (req, res) => {
   try {
-    // Update level based on current balance FIRST
-    await updateUserLevelByBalance(req.user.id);
-    
     const wallet = await Wallet.findOne({ user: req.user.id });
     const transactions = await Transaction.find({ user: req.user.id });
     const referrals = await User.countDocuments({ referredBy: req.user.id });
     
+    // Calculate total recharged
     const totalRecharged = transactions
       .filter(t => t.type === 'recharge' && t.status === 'approved')
       .reduce((sum, t) => sum + t.amount, 0);
     
+    // Calculate total withdrawn
     const totalWithdrawn = transactions
       .filter(t => t.type === 'withdraw' && t.status === 'approved')
       .reduce((sum, t) => sum + t.amount, 0);
     
+    // Calculate total profit
     const totalProfit = transactions
       .filter(t => t.type === 'profit')
       .reduce((sum, t) => sum + t.amount, 0);
+    
+    // Calculate referral bonus - FIX THIS PART
+    const referralBonusTransactions = await Transaction.find({
+      user: req.user.id,
+      type: 'referral_bonus',
+      status: 'approved'
+    });
+    
+    const totalReferralBonus = referralBonusTransactions.reduce((sum, t) => sum + t.amount, 0);
+    
+    console.log('Referral bonus calculated:', totalReferralBonus); // Debug log
     
     res.status(200).json({
       success: true,
@@ -102,6 +113,7 @@ const getUserStats = async (req, res) => {
         totalRecharged,
         totalWithdrawn,
         totalProfit,
+        totalReferralBonus,  // This was missing!
         totalReferrals: referrals,
         pendingWithdrawals: wallet?.pendingWithdrawals || 0
       }
@@ -114,7 +126,6 @@ const getUserStats = async (req, res) => {
     });
   }
 };
-
 // @desc    Request admin role
 // @route   POST /api/users/request-admin
 // @access  Private
