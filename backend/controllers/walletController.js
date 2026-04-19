@@ -30,7 +30,9 @@ const getBalance = async (req, res) => {
 // @access  Private
 const requestWithdrawal = async (req, res) => {
   try {
-    const { amount, bankName, accountNumber, accountHolder, SWIFTCode } = req.body;
+    const { amount, bankName, accountNumber, accountHolder, ifscCode, swiftCode } = req.body;
+    
+    console.log('Withdrawal request received:', { amount, bankName, accountNumber, accountHolder });
     
     // Validate amount
     if (!amount || amount < MIN_WITHDRAWAL) {
@@ -57,18 +59,20 @@ const requestWithdrawal = async (req, res) => {
       });
     }
     
-    // Create withdrawal transaction
+    // Create withdrawal transaction with FULL bank details
     const transaction = await Transaction.create({
       user: req.user.id,
       type: 'withdraw',
       amount,
       status: 'pending',
       bankDetails: {
-        bankName,
-        accountNumber,
-        accountHolder,
-        SWIFTCode
-      }
+        bankName: bankName || 'Not provided',
+        accountNumber: accountNumber || 'Not provided',
+        accountHolder: accountHolder || req.user.name,
+        ifscCode: ifscCode || swiftCode || 'Not provided',
+        swiftCode: swiftCode || 'Not provided'
+      },
+      createdAt: new Date()
     });
     
     // Update wallet
@@ -86,10 +90,10 @@ const requestWithdrawal = async (req, res) => {
       newBalance: wallet.balance
     });
   } catch (error) {
-    console.error(error);
+    console.error('Withdrawal error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error'
+      message: 'Server Error: ' + error.message
     });
   }
 };

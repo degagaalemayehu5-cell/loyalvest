@@ -34,78 +34,75 @@ const Withdraw = () => {
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    const withdrawAmount = parseFloat(amount);
-    
-    // Validation checks
-    if (!amount || isNaN(withdrawAmount) || withdrawAmount <= 0) {
-      toast.error('Please enter a valid amount');
-      return;
-    }
-    
-    if (withdrawAmount < minWithdrawal) {
-      toast.error(`Minimum withdrawal amount is ETB${minWithdrawal}`);
-      return;
-    }
-    
-    if (withdrawAmount > maxWithdrawal) {
-      toast.error(`Maximum withdrawal amount is ETB${maxWithdrawal}`);
-      return;
-    }
-    
-    if (withdrawAmount > balance) {
-      toast.error(`Insufficient balance. Your balance is ETB${balance.toLocaleString()}`);
-      return;
-    }
-    
-    if (!bankName.trim()) {
-      toast.error('Please enter bank name');
-      return;
-    }
-    
-    if (!accountNumber.trim()) {
-      toast.error('Please enter account number');
-      return;
-    }
-    
-    if (!accountHolder.trim()) {
-      toast.error('Please enter account holder name');
-      return;
-    }
-    
-    
-    setSubmitting(true);
-    try {
-      const response = await api.post('/wallet/withdraw', {
-        amount: withdrawAmount,
-        bankName: bankName.trim(),
-        accountNumber: accountNumber.trim(),
-        accountHolder: accountHolder.trim(),
-
-      });
-      
-      toast.success('Withdrawal request submitted successfully!');
-      console.log('Withdrawal response:', response.data);
-      
-      // Reset form
-      setAmount('');
-      setBankName('');
-      setAccountNumber('');
-      setAccountHolder('');
-      setIfscCode('');
-      
-      // Refresh balance
-      await fetchBalance();
-      
-    } catch (error) {
-      console.error('Withdrawal error:', error);
-      toast.error(error.response?.data?.message || 'Withdrawal failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  e.preventDefault();
   
+  const withdrawAmount = parseFloat(amount);
+  
+  // Validation checks
+  if (!amount || isNaN(withdrawAmount) || withdrawAmount <= 0) {
+    toast.error('Please enter a valid amount');
+    return;
+  }
+  
+  if (withdrawAmount < minWithdrawal) {
+    toast.error(`Minimum withdrawal amount is ETB${minWithdrawal}`);
+    return;
+  }
+  
+  if (withdrawAmount > maxWithdrawal) {
+    toast.error(`Maximum withdrawal amount is ETB${maxWithdrawal}`);
+    return;
+  }
+  
+  if (withdrawAmount > balance) {
+    toast.error(`Insufficient balance. Your balance is ETB${balance.toLocaleString()}`);
+    return;
+  }
+  
+  if (!bankName.trim()) {
+    toast.error('Please enter bank name');
+    return;
+  }
+  
+  if (!accountNumber.trim()) {
+    toast.error('Please enter account number');
+    return;
+  }
+  
+  if (!accountHolder.trim()) {
+    toast.error('Please enter account holder name');
+    return;
+  }
+  
+  setSubmitting(true);
+  try {
+    const response = await api.post('/wallet/withdraw', {
+      amount: withdrawAmount,
+      bankName: bankName.trim(),
+      accountNumber: accountNumber.trim(),
+      accountHolder: accountHolder.trim(),
+      ifscCode: ifscCode.trim().toUpperCase()
+    });
+    
+    toast.success('Withdrawal request submitted successfully!');
+    
+    // Reset form
+    setAmount('');
+    setBankName('');
+    setAccountNumber('');
+    setAccountHolder('');
+    setIfscCode('');
+    
+    // Refresh balance
+    await fetchBalance();
+    
+  } catch (error) {
+    console.error('Withdrawal error:', error);
+    toast.error(error.response?.data?.message || 'Withdrawal failed. Please try again.');
+  } finally {
+    setSubmitting(false);
+  }
+};
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

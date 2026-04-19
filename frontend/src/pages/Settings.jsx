@@ -215,7 +215,6 @@ const Settings = () => {
           </button>
           <div className="text-sm text-gray-500 mt-2">
             <p>📧 Email: support@loyalvest.com</p>
-            <p>📞 Phone: +251-XXX-XXXXXX</p>
             <p>⏰ Response Time: Within 24 hours</p>
           </div>
         </div>
