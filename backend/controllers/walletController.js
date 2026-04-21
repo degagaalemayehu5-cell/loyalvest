@@ -1,4 +1,5 @@
 const Wallet = require('../models/Wallet');
+const { checkAndUnlockReferralBonus } = require('../utils/referralHelper');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const { MIN_WITHDRAWAL, MAX_WITHDRAWAL } = require('../config/constants');
@@ -224,6 +225,10 @@ const getTransactions = async (req, res) => {
 // @desc    Approve recharge (admin only - add to wallet and update level)
 // @route   PUT /api/wallet/approve-recharge/:id
 // @access  Private/Admin
+
+// @desc    Approve recharge (admin only - add to wallet and update level)
+// @route   PUT /api/wallet/approve-recharge/:id
+// @access  Private/Admin
 const approveRecharge = async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id);
@@ -262,13 +267,22 @@ const approveRecharge = async (req, res) => {
       });
     }
     
+    // CHECK AND UNLOCK REFERRAL BONUSES
+    // When user deposits money, check if they were referred and unlock bonuses
+    const unlockedCount = await checkAndUnlockReferralBonus(transaction.user, transaction.amount);
+    
+    if (unlockedCount > 0) {
+      console.log(`🎉 Unlocked ${unlockedCount} referral bonuses for user ${transaction.user}`);
+    }
+    
     // Update user level based on new balance
     await updateUserLevelByBalance(transaction.user);
     
     res.status(200).json({
       success: true,
       message: 'Recharge approved and amount credited',
-      newBalance: wallet.balance
+      newBalance: wallet.balance,
+      unlockedReferrals: unlockedCount
     });
   } catch (error) {
     console.error(error);

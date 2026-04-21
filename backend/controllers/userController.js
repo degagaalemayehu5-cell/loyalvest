@@ -271,6 +271,74 @@ const forceUpdateLevel = async (req, res) => {
     });
   }
 };
+/// @desc    Get referral details with status (locked/available)
+// @route   GET /api/users/referrals-detail
+// @access  Private
+const getReferralsDetail = async (req, res) => {
+  try {
+    const Referral = require('../models/Referral');
+    
+    let referrals = await Referral.find({ referrer: req.user.id })
+      .populate('referred', 'name phone')
+      .sort({ createdAt: -1 });
+    
+    // Process each referral to ensure correct status
+    referrals = referrals.map(ref => {
+      // Convert to plain object
+      const refObj = ref.toObject ? ref.toObject() : ref;
+      
+      // If status is 'paid' from old system, check if bonus was actually added
+      // For old referrals, treat them as 'available' if bonus was already added
+      if (refObj.status === 'paid') {
+        // Check if there's a transaction for this bonus
+        // For simplicity, we'll mark old paid referrals as 'paid' but show correctly
+        refObj.status = 'paid';
+        refObj.referredUserDeposit = refObj.referredUserDeposit || refObj.minDepositRequired || 500;
+      }
+      
+      // If status is 'pending' from old system, convert to 'locked'
+      if (refObj.status === 'pending') {
+        refObj.status = 'locked';
+        refObj.referredUserDeposit = refObj.referredUserDeposit || 0;
+      }
+      
+      // Ensure minDepositRequired is set
+      if (!refObj.minDepositRequired) {
+        refObj.minDepositRequired = 500;
+      }
+      
+      // Calculate if bonus should be available based on deposits
+      if (refObj.status === 'locked' && refObj.referredUserDeposit >= refObj.minDepositRequired) {
+        refObj.status = 'available';
+      }
+      
+      return refObj;
+    });
+    
+    // Calculate stats
+    const stats = {
+      total: referrals.length,
+      locked: referrals.filter(r => r.status === 'locked').length,
+      available: referrals.filter(r => r.status === 'available').length,
+      paid: referrals.filter(r => r.status === 'paid').length,
+      totalBonusLocked: referrals.filter(r => r.status === 'locked').reduce((sum, r) => sum + (r.bonusAmount || 0), 0),
+      totalBonusAvailable: referrals.filter(r => r.status === 'available').reduce((sum, r) => sum + (r.bonusAmount || 0), 0),
+      totalBonusPaid: referrals.filter(r => r.status === 'paid').reduce((sum, r) => sum + (r.bonusAmount || 0), 0)
+    };
+    
+    res.status(200).json({
+      success: true,
+      referrals,
+      stats
+    });
+  } catch (error) {
+    console.error('Get referrals detail error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error'
+    });
+  }
+};
 
 module.exports = {
   getProfile,
@@ -278,6 +346,7 @@ module.exports = {
   getUserStats,
   requestAdmin,
   getReferrals,
+  getReferralsDetail,
   checkAndUpdateLevel,
   forceUpdateLevel
 };

@@ -18,9 +18,18 @@ const ReferralSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'paid', 'cancelled'],
+    enum: ['pending', 'locked', 'available', 'paid', 'cancelled'],
     default: 'pending'
   },
+  referredUserDeposit: {
+    type: Number,
+    default: 0
+  },
+  minDepositRequired: {
+    type: Number,
+    default: 500
+  },
+  unlockedAt: Date,
   createdAt: {
     type: Date,
     default: Date.now

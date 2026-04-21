@@ -28,11 +28,11 @@ try {
 }
 
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ phone: '0704207117' });
+    const existingAdmin = await User.findOne({ phone: '0725157774' });
     if (existingAdmin) {
       console.log('\n⚠️ Admin already exists!');
       console.log('=================================');
-      console.log('📧 Phone: 0704207117');
+      console.log('📧 Phone: 0725157774');
       console.log('🔑 You can login with your existing password');
       console.log('=================================\n');
       process.exit();
@@ -45,7 +45,7 @@ try {
     // Create admin user
     const admin = await User.create({
       name: 'System Administrator',
-      phone: '0704207117',
+      phone: '0725157774',
       password: plainPassword,
       referralCode: 'ADMIN' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       isAdmin: true,
@@ -58,7 +58,7 @@ try {
 
     console.log('\n🎉 Admin created successfully!');
     console.log('=================================');
-    console.log('📧 Phone: 0704207117');
+    console.log('📧 Phone: 0725157774');
     console.log('🔑 Password: 357415963');
     console.log('🆔 Admin ID:', admin._id.toString());
     console.log('=================================');

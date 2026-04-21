@@ -37,7 +37,7 @@ const register = async (req, res) => {
       password
     });
 
-    // Handle referral - ADD BONUS TO REFERRER
+    // Handle referral - BONUS IS LOCKED (NOT added immediately)
     if (referralCode) {
       const referrer = await User.findOne({ referralCode });
       if (referrer) {
@@ -45,39 +45,25 @@ const register = async (req, res) => {
         user.referredBy = referrer._id;
         await user.save();
 
-        // Add bonus to referrer's wallet
-        const referrerWallet = await Wallet.findOne({ user: referrer._id });
-        if (referrerWallet) {
-          referrerWallet.balance += REFERRAL_BONUS_AMOUNT;
-          referrerWallet.totalRecharged += REFERRAL_BONUS_AMOUNT;
-          await referrerWallet.save();
-          console.log(`✅ Added ETB${REFERRAL_BONUS_AMOUNT} to ${referrer.name} for referring ${user.name}`);
-        }
-
-        // Create referral record
+        // Create referral record as LOCKED (bonus NOT added to wallet yet)
         await Referral.create({
           referrer: referrer._id,
           referred: user._id,
           bonusAmount: REFERRAL_BONUS_AMOUNT,
-          status: 'paid'
+          status: 'locked',  // ← LOCKED, not 'paid'
+          minDepositRequired: 500,
+          referredUserDeposit: 0
         });
 
-        // Create transaction record for the bonus
-        await Transaction.create({
-          user: referrer._id,
-          type: 'referral_bonus',
-          amount: REFERRAL_BONUS_AMOUNT,
-          status: 'approved',
-          paymentMethod: 'referral',
-          reference: user._id.toString(),
-          description: `Referral bonus for inviting ${user.name}`
-        });
-
-        console.log(`✅ Referral bonus transaction created for ${referrer.name}`);
+        console.log(`✅ Referral record created for ${referrer.name} - LOCKED until referred user deposits ETB500`);
+        
+        // DO NOT add bonus to wallet here!
+        // DO NOT create transaction here!
+        // Bonus will be added when referred user deposits 500 ETB
       }
     }
 
-    // Create wallet for user
+    // Create wallet for new user
     await Wallet.create({
       user: user._id,
       balance: 0
@@ -106,7 +92,6 @@ const register = async (req, res) => {
     });
   }
 };
-
 
 // @desc    Login user
 // @route   POST /api/auth/login
