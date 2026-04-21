@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
-import { FiCopy, FiUsers, FiRefreshCw } from 'react-icons/fi';
+import { FiCopy, FiUsers, FiRefreshCw, FiLock, FiUnlock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import PendingOrderList from '../components/PendingOrderList';
 
 const Account = () => {
   const { user } = useAuth();
   const [referrals, setReferrals] = useState([]);
+  const [referralDetails, setReferralDetails] = useState([]);
   const [stats, setStats] = useState(null);
+  const [referralStats, setReferralStats] = useState(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -31,6 +33,12 @@ const Account = () => {
       console.log('totalReferralBonus from API:', statsRes.data.stats?.totalReferralBonus);
       setStats(statsRes.data.stats);
       
+      // Fetch referral details with status (locked/available)
+      const referralDetailRes = await api.get('/users/referrals-detail');
+      console.log('Referral details response:', referralDetailRes.data);
+      setReferralDetails(referralDetailRes.data.referrals || []);
+      setReferralStats(referralDetailRes.data.stats);
+      
     } catch (error) {
       console.error('Fetch data error:', error);
       toast.error('Failed to load data');
@@ -50,7 +58,7 @@ const Account = () => {
     toast.success('Referral link copied!');
   };
   
-  // Get referral bonus from stats API - THIS IS THE KEY FIX
+  // Get referral bonus from stats API
   const referralBonus = stats?.totalReferralBonus || 0;
   
   console.log('Referral bonus being displayed:', referralBonus);
@@ -108,49 +116,114 @@ const Account = () => {
             </div>
           </div>
           
+          {/* Referral Bonus Breakdown */}
+          {referralStats && (
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="text-center p-2 bg-yellow-50 rounded-lg">
+                <p className="text-xs text-gray-500">Locked</p>
+                <p className="text-lg font-bold text-yellow-600">{referralStats.locked}</p>
+                <p className="text-xs text-gray-400">ETB{referralStats.totalBonusLocked}</p>
+              </div>
+              <div className="text-center p-2 bg-green-50 rounded-lg">
+                <p className="text-xs text-gray-500">Available</p>
+                <p className="text-lg font-bold text-green-600">{referralStats.available}</p>
+                <p className="text-xs text-gray-400">ETB{referralStats.totalBonusAvailable}</p>
+              </div>
+              <div className="text-center p-2 bg-blue-50 rounded-lg">
+                <p className="text-xs text-gray-500">Paid</p>
+                <p className="text-lg font-bold text-blue-600">{referralStats.paid}</p>
+                <p className="text-xs text-gray-400">ETB{referralStats.totalBonusPaid}</p>
+              </div>
+            </div>
+          )}
+          
           <div className="text-center p-3 bg-blue-50 rounded-lg">
             <p className="text-xs text-gray-500">Total Wallet Balance</p>
             <p className="text-2xl font-bold text-blue-600">ETB{(stats?.balance || 0).toLocaleString()}</p>
           </div>
         </div>
         
-        {/* Referrals List */}
-        {referrals.length > 0 && (
+        {/* Referrals List with Status */}
+        {referralDetails.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm p-4">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <FiUsers className="text-green-600" /> Your Referrals ({referrals.length})
+              <FiUsers className="text-green-600" /> Your Referrals ({referralDetails.length})
             </h3>
-            <div className="space-y-2">
-              {referrals.map((ref) => (
-                <div key={ref._id} className="flex justify-between items-center py-2 border-b last:border-0">
-                  <div>
-                    <p className="font-medium text-gray-900">{ref.name}</p>
-                    <p className="text-xs text-gray-500">{new Date(ref.createdAt).toLocaleDateString()}</p>
+            <div className="space-y-3">
+              {referralDetails.map((ref) => (
+                <div key={ref._id} className="border-b last:border-0 pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-gray-900">{ref.referred?.name || 'User'}</p>
+                      <p className="text-xs text-gray-500">
+                        Deposited: ETB{ref.referredUserDeposit} / ETB{ref.minDepositRequired}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-xs px-2 py-1 rounded-full inline-flex items-center gap-1 ${
+                        ref.status === 'available' ? 'bg-green-100 text-green-700' :
+                        ref.status === 'locked' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {ref.status === 'available' && <FiUnlock className="w-3 h-3" />}
+                        {ref.status === 'locked' && <FiLock className="w-3 h-3" />}
+                        {ref.status === 'available' ? 'Available' : 
+                         ref.status === 'locked' ? 'Locked' : 'Paid'}
+                      </span>
+                      <p className="text-sm font-semibold text-green-600 mt-1">+ETB{ref.bonusAmount}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-semibold text-green-600">+ETB50</span>
-                    <p className="text-xs text-gray-400">Referral bonus</p>
-                  </div>
+                  
+                  {/* Progress bar for locked referrals */}
+                  {ref.status === 'locked' && (
+                    <div className="mt-2">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Progress to unlock</span>
+                        <span>{Math.min(100, (ref.referredUserDeposit / ref.minDepositRequired) * 100)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          className="bg-yellow-500 rounded-full h-1.5 transition-all duration-300"
+                          style={{ width: `${Math.min(100, (ref.referredUserDeposit / ref.minDepositRequired) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Need ETB{Math.max(0, ref.minDepositRequired - ref.referredUserDeposit)} more deposit to unlock
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
             
-            {/* Total Bonus Summary */}
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-gray-600">Total Referral Bonus</span>
-                <span className="text-lg font-bold text-green-600">ETB{referralBonus}</span>
-              </div>
+            {/* Info Box */}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-800">
+                💡 <span className="font-semibold">How referral bonus works:</span><br />
+                • You earn ETB50 for each friend who joins using your code<br />
+                • Bonus is <strong className="text-yellow-600">LOCKED</strong> until your friend deposits ETB500 total<br />
+                • Once unlocked, bonus is added to your wallet automatically<br />
+                • You can withdraw unlocked bonus anytime
+              </p>
             </div>
           </div>
         )}
         
         {/* No Referrals Message */}
-        {referrals.length === 0 && !loading && (
+        {referralDetails.length === 0 && !loading && (
           <div className="bg-white rounded-xl shadow-sm p-4 text-center">
             <FiUsers className="w-12 h-12 text-gray-300 mx-auto mb-2" />
             <p className="text-gray-500">No referrals yet</p>
             <p className="text-xs text-gray-400 mt-1">Share your referral code to earn ETB50 per referral!</p>
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg text-left">
+              <p className="text-xs text-blue-800">
+                💡 <span className="font-semibold">How it works:</span><br />
+                1. Share your referral code<br />
+                2. Friend registers using your code<br />
+                3. Friend deposits ETB500 total<br />
+                4. You get ETB50 added to your wallet!
+              </p>
+            </div>
           </div>
         )}
         
