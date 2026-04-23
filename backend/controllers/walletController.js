@@ -158,7 +158,7 @@ const getRechargeInfo = async (req, res) => {
         {
           bankName: "Awash Bank",
           accountHolder: "Loyalvest Investments",
-          realname: "Cherinet Abebe",
+          realname: "Cherinet Bogale",
           accountNumber: "013351149025000",
           adminName: "Admin Team"
         },{
