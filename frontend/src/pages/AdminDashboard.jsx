@@ -324,34 +324,55 @@ const AdminDashboard = () => {
           )}
           
           {/* RECHARGE REQUESTS TAB - WITH USER DETAILS */}
-          {activeTab === 'recharges' && (
-            <div className="space-y-3">
-              {recharges.length === 0 ? (
-                <div className="bg-white rounded-xl p-8 text-center"><FiUpload className="w-12 h-12 text-gray-400 mx-auto mb-2" /><p className="text-gray-500">No pending recharge requests</p></div>
-              ) : (
-                recharges.map(r => (
-                  <div key={r._id} className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-400">
-                    <div className="flex justify-between items-start mb-3 pb-2 border-b">
-                      <div><p className="font-bold text-gray-900 text-lg">{r.user?.name}</p><p className="text-sm text-gray-500">{r.user?.phone}</p></div>
-                      <div className="text-right"><p className="text-2xl font-bold text-green-600">ETB{r.amount?.toLocaleString()}</p><p className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleString()}</p></div>
-                    </div>
-                    <div className="bg-purple-50 rounded-lg p-3 mb-3">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">📋 Transaction Details</p>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between items-center"><span className="text-gray-600">Transaction ID:</span><span className="font-mono">{r.reference || 'N/A'}</span></div>
-                        <div className="flex justify-between items-center"><span className="text-gray-600">Payment Method:</span><span className="capitalize">{r.paymentMethod || 'Bank Transfer'}</span></div>
-                        <div className="flex justify-between items-center"><span className="text-gray-600">Status Note:</span><span className="text-yellow-600">{r.adminNotes || 'Awaiting verification'}</span></div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleApproveRecharge(r._id)} className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"><FiCheckCircle /> Approve & Credit ETB{r.amount?.toLocaleString()}</button>
-                      <button onClick={() => handleRejectRecharge(r._id)} className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 flex items-center justify-center gap-2"><FiXCircle /> Reject</button>
-                    </div>
+{activeTab === 'recharges' && (
+  <div className="space-y-3">
+    {recharges.length === 0 ? (
+      <div className="bg-white rounded-xl p-8 text-center"><FiUpload className="w-12 h-12 text-gray-400 mx-auto mb-2" /><p className="text-gray-500">No pending recharge requests</p></div>
+    ) : (
+      recharges.map(r => (
+        <div key={r._id} className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-400">
+          <div className="flex justify-between items-start mb-3 pb-2 border-b">
+            <div><p className="font-bold text-gray-900 text-lg">{r.user?.name}</p><p className="text-sm text-gray-500">{r.user?.phone}</p></div>
+            <div className="text-right"><p className="text-2xl font-bold text-green-600">ETB{r.amount?.toLocaleString()}</p><p className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleString()}</p></div>
+          </div>
+          
+          <div className="bg-purple-50 rounded-lg p-3 mb-3">
+            <p className="text-sm font-semibold text-gray-700 mb-2">📋 Transaction Details</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center"><span className="text-gray-600">Payment Method:</span><span className="capitalize">{r.paymentMethod || 'Bank Transfer'}</span></div>
+              <div className="flex justify-between items-center"><span className="text-gray-600">Status Note:</span><span className="text-yellow-600">{r.adminNotes || 'Awaiting verification'}</span></div>
+              
+              {/* Screenshot Display - FIXED FIELD NAME */}
+              {r.screenshot && (
+                <div className="mt-2">
+                  <span className="text-gray-600 block mb-2">Payment Screenshot:</span>
+                  <div className="flex justify-center">
+                    <img
+                      src={r.screenshot}
+                      alt="Payment Screenshot"
+                      className="max-h-48 rounded-lg shadow cursor-pointer hover:opacity-90 transition"
+                      onClick={() => window.open(r.screenshot, '_blank')}
+                      onError={(e) => {
+                        console.error('Image failed to load:', r.screenshot);
+                        e.target.src = 'https://via.placeholder.com/400x200?text=Image+Not+Found';
+                      }}
+                    />
                   </div>
-                ))
+                  <p className="text-xs text-gray-500 text-center mt-2">Click image to view full size</p>
+                </div>
               )}
             </div>
-          )}
+          </div>
+          
+          <div className="flex gap-2">
+            <button onClick={() => handleApproveRecharge(r._id)} className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"><FiCheckCircle /> Approve & Credit ETB{r.amount?.toLocaleString()}</button>
+            <button onClick={() => handleRejectRecharge(r._id)} className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 flex items-center justify-center gap-2"><FiXCircle /> Reject</button>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+)}
           
           {/* PRODUCTS TAB - FULLY INTERACTIVE (Add, Edit, Delete) */}
           {activeTab === 'products' && (
