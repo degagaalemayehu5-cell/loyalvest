@@ -26,6 +26,10 @@ const TransactionSchema = new mongoose.Schema({
     enum: ['bank_transfer', 'upi', 'cash', 'investment', 'wallet', 'referral'],
     default: 'bank_transfer'
   },
+  screenshot: {
+    type: String,  // Cloudinary URL
+    default: null
+  },
   bankDetails: {
     bankName: String,
     accountNumber: String,

@@ -99,12 +99,16 @@ const requestWithdrawal = async (req, res) => {
   }
 };
 
-// @desc    Submit recharge request
+// @desc    Submit recharge request with image upload
 // @route   POST /api/wallet/recharge
 // @access  Private
 const submitRechargeRequest = async (req, res) => {
   try {
-    const { amount, transactionId } = req.body;
+    const { amount } = req.body;
+    
+    console.log('=== RECHARGE REQUEST ===');
+    console.log('Amount:', amount);
+    console.log('File:', req.file);
     
     if (!amount || amount < 100) {
       return res.status(400).json({
@@ -113,31 +117,49 @@ const submitRechargeRequest = async (req, res) => {
       });
     }
     
-    // Create recharge transaction (pending)
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment screenshot is required'
+      });
+    }
+    
+    // Get Cloudinary URL (this is the secure URL from Cloudinary)
+    const screenshotUrl = req.file.path; // Cloudinary returns the URL in 'path'
+    
+    console.log('Screenshot uploaded to Cloudinary:', screenshotUrl);
+    
+    // Create recharge transaction
     const transaction = await Transaction.create({
       user: req.user.id,
       type: 'recharge',
       amount: parseFloat(amount),
       status: 'pending',
       paymentMethod: 'bank_transfer',
-      reference: transactionId,
+      screenshot: screenshotUrl,
       adminNotes: 'Awaiting admin verification'
     });
+    
+    console.log('Transaction created with Cloudinary URL:', transaction.screenshot);
     
     res.status(201).json({
       success: true,
       message: 'Recharge request submitted successfully',
-      transaction
+      transaction: {
+        _id: transaction._id,
+        amount: transaction.amount,
+        status: transaction.status,
+        screenshot: transaction.screenshot
+      }
     });
   } catch (error) {
-    console.error(error);
+    console.error('Recharge error:', error);
     res.status(500).json({
       success: false,
       message: 'Server Error: ' + error.message
     });
   }
 };
-
 // @desc    Get recharge info (admin contact)
 // @route   GET /api/wallet/recharge-info
 // @access  Private
@@ -158,10 +180,11 @@ const getRechargeInfo = async (req, res) => {
         {
           bankName: "Awash Bank",
           accountHolder: "Loyalvest Investments",
-          realname: "Cherinet Bogale ",
+          realname: "Cherinet Bogale",
           accountNumber: "013351149025000",
           adminName: "Admin Team"
-        },{
+        },
+        {
           bankName: "CBE",
           accountHolder: "Loyalvest Investments",
           realname: "Leta Alemayehu",
@@ -227,10 +250,6 @@ const getTransactions = async (req, res) => {
     });
   }
 };
-
-// @desc    Approve recharge (admin only - add to wallet and update level)
-// @route   PUT /api/wallet/approve-recharge/:id
-// @access  Private/Admin
 
 // @desc    Approve recharge (admin only - add to wallet and update level)
 // @route   PUT /api/wallet/approve-recharge/:id
