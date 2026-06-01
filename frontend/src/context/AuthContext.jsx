@@ -9,28 +9,53 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    delete api.defaults.headers.common['Authorization'];
+    setUser(null);
+    toast.success('Logged out successfully');
+  };
   
-  // Check localStorage on initial load
+  // Initialize auth from token and validate with backend
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    console.log('Initial load - Token:', !!token);
-    console.log('Initial load - Stored user:', storedUser);
-    
-    if (token && storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+
+      console.log('Initial load - Token:', !!token);
+      console.log('Initial load - Stored user:', storedUser);
+
+      if (token) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        console.log('User restored from localStorage:', userData);
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+          } catch (error) {
+            console.error('Error parsing stored user:', error);
+            localStorage.removeItem('user');
+          }
+        }
+
+        try {
+          const response = await api.get('/auth/me');
+          const userData = response.data.user;
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          console.log('User validated from API:', userData);
+        } catch (error) {
+          console.error('Auth initialization failed:', error);
+          logout();
+        }
       }
-    }
-    setLoading(false);
+
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
   
   const fetchUser = async () => {
@@ -49,25 +74,26 @@ export const AuthProvider = ({ children }) => {
   };
   
   const login = async (phone, password) => {
-  try {
-    const response = await api.post('/auth/login', { phone, password });
-    const { token, user: userData } = response.data;
-    
-    // 1. Storage first
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    
-    // 2. Set Axios Header immediately
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
-    // 3. Update State
-    setUser(userData);
-    
-    return true; 
-  } catch (error) {
-    // ... error handling
-  }
-};
+    try {
+      const response = await api.post('/auth/login', { phone, password });
+      const { token, user: userData } = response.data;
+      
+      // 1. Storage first
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // 2. Set Axios Header immediately
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // 3. Update State
+      setUser(userData);
+      
+      return true; 
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Login failed');
+      return false;
+    }
+  };
   
   const register = async (name, phone, password, referralCode) => {
     try {
@@ -88,14 +114,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
   
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    delete api.defaults.headers.common['Authorization'];
-    setUser(null);
-    toast.success('Logged out successfully');
-  };
-  
   const changePassword = async (currentPassword, newPassword) => {
     try {
       await api.put('/auth/change-password', { currentPassword, newPassword });
@@ -110,7 +128,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
-    isAuthenticated: !!user || !!localStorage.getItem('token'),
+    isAuthenticated: !!user,
     login,
     register,
     logout,

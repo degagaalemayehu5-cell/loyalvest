@@ -24,11 +24,18 @@ const ProductSchema = new mongoose.Schema({
     type: Number,
     default: 30
   },
+  vipLevel: {
+    type: String,
+    default: 'VIP 1'
+  },
   isActive: {
     type: Boolean,
     default: true
   },
-  imageUrl: String,
+  imageUrl: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now

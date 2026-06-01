@@ -23,7 +23,10 @@ const getProducts = async (req, res) => {
     const products = await Product.find({
       minLevel: { $lte: userLevel },
       isActive: true
-    }).sort({ minInvestment: 1 });
+    })
+      .select('name description minLevel minInvestment maxInvestment profitRate duration vipLevel imageUrl')
+      .sort({ minInvestment: 1 })
+      .lean();
     
     res.status(200).json({
       success: true,
@@ -146,7 +149,7 @@ await Transaction.create({
 const getMyInvestments = async (req, res) => {
   try {
     const investments = await Investment.find({ user: req.user.id })
-      .populate('product', 'name profitRate duration')
+      .populate('product', 'name profitRate duration vipLevel imageUrl minLevel')
       .sort({ createdAt: -1 });
     
     // Calculate current profit for active investments
@@ -188,8 +191,9 @@ const getRealTimeProfit = async (req, res) => {
       const lastCalc = investment.lastProfitCalculated || investment.startDate;
       const hoursSinceLastCalc = (now - lastCalc) / (1000 * 60 * 60);
       
+      const durationDays = investment.product.duration || 30;
       const totalProfit = investment.amount * (investment.product.profitRate / 100);
-      const hourlyProfit = totalProfit / (30 * 24);
+      const hourlyProfit = totalProfit / (durationDays * 24);
       const accruedForThis = hourlyProfit * hoursSinceLastCalc;
       
       const totalEarned = (investment.profitEarned || 0) + accruedForThis;
@@ -276,7 +280,8 @@ const calculateAllProfit = async (req, res) => {
       );
       
       if (daysSinceLastCalc >= 1) {
-        const dailyProfit = (investment.amount * (investment.product.profitRate / 100)) / 30;
+        const durationDays = investment.product.duration || 30;
+        const dailyProfit = (investment.amount * (investment.product.profitRate / 100)) / durationDays;
         const profitToAdd = dailyProfit * daysSinceLastCalc;
         
         // Update investment

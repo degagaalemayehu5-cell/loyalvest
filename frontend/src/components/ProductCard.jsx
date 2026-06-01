@@ -55,13 +55,28 @@ const ProductCard = ({ product, onInvest }) => {
     return null;
   }
   
+  const imageSrc = product.imageUrl || 'https://via.placeholder.com/800x400?text=Investment+Plan';
+
   return (
     <>
-      <div className="card hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowModal(true)}>
-        <div className="flex justify-between items-start mb-3">
+      <div className="card hover:shadow-md transition-shadow cursor-pointer overflow-hidden" onClick={() => setShowModal(true)}>
+        <div className="h-40 overflow-hidden mb-3 rounded-t-xl bg-gray-100">
+          <img
+            src={imageSrc}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/800x400?text=Investment+Plan';
+            }}
+          />
+        </div>
+        <div className="flex justify-between items-start mb-3 px-3">
           <div>
-            <h3 className="font-bold text-gray-900">{product.name}</h3>
-            <p className="text-xs text-gray-500 mt-1">{product.description}</p>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {product.vipLevel && <span className="text-[10px] uppercase tracking-[0.3em] bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">{product.vipLevel}</span>}
+              <h3 className="font-bold text-gray-900">{product.name}</h3>
+            </div>
+            <p className="text-xs text-gray-500">{product.description}</p>
           </div>
           <span className="text-green-600 font-bold">{product.profitRate}%</span>
         </div>

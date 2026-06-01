@@ -22,6 +22,8 @@ const AdminDashboard = () => {
     name: '',
     description: '',
     minLevel: 'BRONZE',
+    vipLevel: 'VIP 1',
+    imageUrl: '',
     minInvestment: '',
     maxInvestment: '',
     profitRate: '',
@@ -177,6 +179,8 @@ const AdminDashboard = () => {
         name: productForm.name,
         description: productForm.description,
         minLevel: productForm.minLevel,
+        vipLevel: productForm.vipLevel,
+        imageUrl: productForm.imageUrl,
         minInvestment: parseFloat(productForm.minInvestment),
         maxInvestment: productForm.maxInvestment ? parseFloat(productForm.maxInvestment) : null,
         profitRate: parseFloat(productForm.profitRate),
@@ -211,6 +215,8 @@ const AdminDashboard = () => {
       name: product.name,
       description: product.description || '',
       minLevel: product.minLevel,
+      vipLevel: product.vipLevel || 'VIP 1',
+      imageUrl: product.imageUrl || '',
       minInvestment: product.minInvestment,
       maxInvestment: product.maxInvestment || '',
       profitRate: product.profitRate,
@@ -225,6 +231,8 @@ const AdminDashboard = () => {
       name: '',
       description: '',
       minLevel: 'BRONZE',
+      vipLevel: 'VIP 1',
+      imageUrl: '',
       minInvestment: '',
       maxInvestment: '',
       profitRate: '',
@@ -387,10 +395,11 @@ const AdminDashboard = () => {
                     <div key={product._id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <h3 className="font-bold text-gray-900 text-lg">{product.name}</h3>
                             <span className={`text-xs px-2 py-1 rounded-full ${product.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{product.isActive ? 'Active' : 'Inactive'}</span>
                             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{product.minLevel}</span>
+                            {product.vipLevel && <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">{product.vipLevel}</span>}
                           </div>
                           <p className="text-sm text-gray-500 mb-3">{product.description || 'No description'}</p>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -452,6 +461,24 @@ const AdminDashboard = () => {
             <div className="space-y-3">
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label><input type="text" placeholder="e.g., Bronze Starter" value={productForm.name} onChange={(e) => setProductForm({...productForm, name: e.target.value})} className="input-field" /></div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea placeholder="Describe the investment plan" value={productForm.description} onChange={(e) => setProductForm({...productForm, description: e.target.value})} className="input-field" rows="2" /></div>
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">VIP Level</label><input type="text" placeholder="VIP 1" value={productForm.vipLevel} onChange={(e) => setProductForm({...productForm, vipLevel: e.target.value})} className="input-field" /></div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <input type="text" placeholder="https://..." value={productForm.imageUrl} onChange={(e) => setProductForm({...productForm, imageUrl: e.target.value})} className="input-field" />
+                <p className="text-xs text-gray-500 mt-1">Enter a public image URL to display on the product card.</p>
+                {productForm.imageUrl && (
+                  <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+                    <img
+                      src={productForm.imageUrl}
+                      alt="Product preview"
+                      className="w-full h-28 object-cover"
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/800x400?text=Invalid+Image+URL';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Minimum Level *</label><select value={productForm.minLevel} onChange={(e) => setProductForm({...productForm, minLevel: e.target.value})} className="input-field">{levelOptions.map(l => <option key={l} value={l}>{l}</option>)}</select></div>
               <div className="grid grid-cols-2 gap-3"><div><label className="block text-sm font-medium text-gray-700 mb-1">Min Investment (ETB) *</label><input type="number" placeholder="100" value={productForm.minInvestment} onChange={(e) => setProductForm({...productForm, minInvestment: e.target.value})} className="input-field" /></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Max Investment (ETB)</label><input type="number" placeholder="Unlimited" value={productForm.maxInvestment} onChange={(e) => setProductForm({...productForm, maxInvestment: e.target.value})} className="input-field" /></div></div>
               <div className="grid grid-cols-2 gap-3"><div><label className="block text-sm font-medium text-gray-700 mb-1">Profit Rate (%) *</label><input type="number" placeholder="70" value={productForm.profitRate} onChange={(e) => setProductForm({...productForm, profitRate: e.target.value})} className="input-field" /></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Duration (days) *</label><input type="number" placeholder="30" value={productForm.duration} onChange={(e) => setProductForm({...productForm, duration: e.target.value})} className="input-field" /></div></div>

@@ -11,7 +11,8 @@ const calculateDailyProfit = async (investmentId) => {
     return 0;
   }
   
-  const dailyProfit = (investment.amount * (investment.product.profitRate / 100)) / 30;
+  const durationDays = investment.product.duration || 30;
+  const dailyProfit = (investment.amount * (investment.product.profitRate / 100)) / durationDays;
   return dailyProfit;
 };
 
@@ -36,8 +37,9 @@ const calculateRealTimeProfit = async (investment) => {
   if (!product) return 0;
   
   // Calculate hourly profit rate (over 30 days)
+  const durationDays = product.duration || 30;
   const totalProfit = investment.amount * (product.profitRate / 100);
-  const hourlyProfit = totalProfit / (30 * 24);
+  const hourlyProfit = totalProfit / (durationDays * 24);
   
   // Calculate profit for the time passed
   const profitToAdd = hourlyProfit * hoursSinceLastCalc;
@@ -92,8 +94,9 @@ const getAccruedProfit = async (userId) => {
     const lastCalc = investment.lastProfitCalculated || investment.startDate;
     const hoursSinceLastCalc = (now - lastCalc) / (1000 * 60 * 60);
     
+    const durationDays = investment.product.duration || 30;
     const totalProfit = investment.amount * (investment.product.profitRate / 100);
-    const hourlyProfit = totalProfit / (30 * 24);
+    const hourlyProfit = totalProfit / (durationDays * 24);
     const accrued = hourlyProfit * hoursSinceLastCalc;
     
     totalAccrued += accrued;
@@ -118,8 +121,9 @@ const claimAccruedProfit = async (userId) => {
     const hoursSinceLastCalc = (now - lastCalc) / (1000 * 60 * 60);
     
     if (hoursSinceLastCalc > 0) {
+      const durationDays = investment.product.duration || 30;
       const totalProfit = investment.amount * (investment.product.profitRate / 100);
-      const hourlyProfit = totalProfit / (30 * 24);
+      const hourlyProfit = totalProfit / (durationDays * 24);
       const accruedProfit = hourlyProfit * hoursSinceLastCalc;
       
       if (accruedProfit > 0) {
