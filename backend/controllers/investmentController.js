@@ -16,12 +16,8 @@ const {
 // @access  Private
 const getProducts = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    const userLevel = user.level;
-    
-    // Get products based on user level
+    // Get all active products for every user
     const products = await Product.find({
-      minLevel: { $lte: userLevel },
       isActive: true
     })
       .select('name description minLevel minInvestment maxInvestment profitRate duration vipLevel imageUrl')
