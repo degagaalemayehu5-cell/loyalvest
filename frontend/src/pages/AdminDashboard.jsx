@@ -484,7 +484,7 @@ const AdminDashboard = () => {
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">Only Super Admin can approve or reject recharge requests.</div>
             )}
             <div className="flex gap-2">
-              <button onClick={() => handleApproveRecharge(r._id)} disabled={!isSuperAdmin} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${isSuperAdmin ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}><FiCheckCircle /> Approve & Credit ETB{r.amount?.toLocaleString()}</button>
+              <button onClick={() => handleApproveRecharge(r._id)} disabled={!isSuperAdmin} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${isSuperAdmin ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}><FiCheckCircle /> Approve, Credit & Start Investment</button>
               <button onClick={() => handleRejectRecharge(r._id)} disabled={!isSuperAdmin} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${isSuperAdmin ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}><FiXCircle /> Reject</button>
             </div>
           </div>

@@ -3,6 +3,8 @@ const Transaction = require('../models/Transaction');
 const Wallet = require('../models/Wallet');
 const AdminRequest = require('../models/AdminRequest');
 const Product = require('../models/Product');
+const Investment = require('../models/Investment');
+const { updateUserLevelByBalance } = require('../utils/calculateProfit');
 
 // @desc    Get all pending withdrawals
 // @route   GET /api/admin/withdrawals/pending
@@ -175,14 +177,13 @@ const approveRecharge = async (req, res) => {
     await transaction.save();
     
     // Add amount to user's wallet
-    const wallet = await Wallet.findOne({ user: transaction.user });
+    let wallet = await Wallet.findOne({ user: transaction.user });
     if (wallet) {
       wallet.balance += transaction.amount;
       wallet.totalRecharged += transaction.amount;
       await wallet.save();
     } else {
-      // Create wallet if doesn't exist
-      await Wallet.create({
+      wallet = await Wallet.create({
         user: transaction.user,
         balance: transaction.amount,
         totalRecharged: transaction.amount,
@@ -190,10 +191,51 @@ const approveRecharge = async (req, res) => {
         pendingWithdrawals: 0
       });
     }
+
+    let investmentStarted = false;
+    let investment = null;
+    if (transaction.product) {
+      const product = await Product.findById(transaction.product);
+      if (product) {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + (product.duration || 30));
+
+        investment = await Investment.create({
+          user: transaction.user,
+          product: transaction.product,
+          amount: transaction.amount,
+          endDate,
+          lastProfitCalculated: new Date(),
+          status: 'active',
+          profitEarned: 0
+        });
+
+        const user = await User.findById(transaction.user);
+        if (user) {
+          user.totalInvestment = (user.totalInvestment || 0) + transaction.amount;
+          await user.save();
+        }
+
+        await Transaction.create({
+          user: transaction.user,
+          type: 'investment',
+          amount: transaction.amount,
+          status: 'approved',
+          paymentMethod: 'investment',
+          reference: investment._id.toString()
+        });
+
+        investmentStarted = true;
+      }
+    }
+
+    await updateUserLevelByBalance(transaction.user);
     
     res.status(200).json({
       success: true,
-      message: 'Recharge approved and amount credited'
+      message: investmentStarted ? 'Recharge approved, amount credited, and investment started' : 'Recharge approved and amount credited',
+      investmentId: investment ? investment._id : null,
+      walletBalance: wallet.balance
     });
   } catch (error) {
     console.error(error);

@@ -104,10 +104,13 @@ const requestWithdrawal = async (req, res) => {
 // @access  Private
 const submitRechargeRequest = async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { amount, productId, planName, vipLevel } = req.body;
     
     console.log('=== RECHARGE REQUEST ===');
     console.log('Amount:', amount);
+    console.log('Product ID:', productId);
+    console.log('Plan Name:', planName);
+    console.log('VIP Level:', vipLevel);
     console.log('File:', req.file);
     
     if (!amount || amount < 100) {
@@ -137,6 +140,9 @@ const submitRechargeRequest = async (req, res) => {
       status: 'pending',
       paymentMethod: 'bank_transfer',
       screenshot: screenshotUrl,
+      product: productId || null,
+      productName: planName || '',
+      vipLevel: vipLevel || '',
       adminNotes: 'Awaiting admin verification'
     });
     

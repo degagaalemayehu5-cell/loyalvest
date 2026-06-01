@@ -1,22 +1,79 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { FiCopy, FiInfo, FiUpload, FiClock, FiAlertCircle, FiEye, FiCheck } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const Recharge = () => {
+  const location = useLocation();
   const [rechargeInfo, setRechargeInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [amount, setAmount] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [selectedVip, setSelectedVip] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [productDetails, setProductDetails] = useState(null);
+  const [projectedReturns, setProjectedReturns] = useState(null);
   const [screenshot, setScreenshot] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [recentRequests, setRecentRequests] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const planAmount = params.get('amount');
+    const planName = params.get('plan');
+    const vipLevel = params.get('vip');
+    const productId = params.get('productId');
+
+    if (planAmount) {
+      setAmount(planAmount);
+    }
+    if (planName) {
+      setSelectedPlan(planName);
+    }
+    if (vipLevel) {
+      setSelectedVip(vipLevel);
+    }
+    if (productId) {
+      setSelectedProductId(productId);
+      fetchProductDetails(productId);
+    }
+
     fetchRechargeInfo();
     fetchRecentRequests();
-  }, []);
+  }, [location.search]);
+
+  useEffect(() => {
+    const amountNumber = parseFloat(amount);
+    if (!amountNumber || amountNumber <= 0 || !productDetails) {
+      setProjectedReturns(null);
+      return;
+    }
+
+    const profit = amountNumber * (productDetails.profitRate / 100);
+    const total = amountNumber + profit;
+
+    setProjectedReturns({
+      profit,
+      total,
+      profitRate: productDetails.profitRate,
+      duration: productDetails.duration
+    });
+  }, [amount, productDetails]);
+
+  const fetchProductDetails = async (productId) => {
+    try {
+      const response = await api.get('/investments/products');
+      const product = response.data.products?.find((item) => item._id === productId || item.id === productId);
+      if (product) {
+        setProductDetails(product);
+      }
+    } catch (error) {
+      console.error('Fetch product details error:', error);
+    }
+  };
   
   const fetchRechargeInfo = async () => {
     try {
@@ -67,6 +124,13 @@ const Recharge = () => {
     toast.success('Copied to clipboard!');
   };
   
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+      return 'ETB0';
+    }
+    return `ETB${Number(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -97,6 +161,10 @@ const Recharge = () => {
     formData.append('screenshot', screenshot);
     
     try {
+      formData.append('productId', selectedProductId);
+      formData.append('planName', selectedPlan);
+      formData.append('vipLevel', selectedVip);
+
       const response = await api.post('/wallet/recharge', formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -136,10 +204,35 @@ const Recharge = () => {
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white pt-8 pb-12 px-4">
         <h1 className="text-2xl font-bold">Recharge Wallet</h1>
-        <p className="text-green-100 mt-1">Add funds to your account</p>
+        <p className="text-green-100 mt-1">
+          {selectedPlan ? `Recharge for ${selectedPlan}${selectedVip ? ` (${selectedVip.toUpperCase()})` : ''}` : 'Add funds to your account'}
+        </p>
       </div>
       
       <div className="px-4 -mt-6 space-y-4">
+        {projectedReturns && (
+          <div className="card bg-green-50 border border-green-200 text-green-900">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <p className="text-sm font-semibold">Projected earnings for this plan</p>
+                <p className="text-xs text-green-700">
+                  {selectedPlan}{selectedVip ? ` (${selectedVip.toUpperCase()})` : ''} • {projectedReturns.duration} days • {projectedReturns.profitRate}% total profit
+                </p>
+              </div>
+              <span className="text-xs uppercase tracking-[0.2em] bg-green-100 text-green-700 px-2 py-1 rounded-full">Estimate</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg bg-white p-3 shadow-sm">
+                <p className="text-xs text-gray-500">Expected profit</p>
+                <p className="text-xl font-bold mt-1">{formatCurrency(projectedReturns.profit)}</p>
+              </div>
+              <div className="rounded-lg bg-white p-3 shadow-sm">
+                <p className="text-xs text-gray-500">Total return</p>
+                <p className="text-xl font-bold mt-1">{formatCurrency(projectedReturns.total)}</p>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Admin Bank Details */}
         {rechargeInfo && rechargeInfo.adminAccounts && (
           <div className="card">

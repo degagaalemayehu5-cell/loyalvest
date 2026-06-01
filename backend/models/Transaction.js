@@ -26,6 +26,21 @@ const TransactionSchema = new mongoose.Schema({
     enum: ['bank_transfer', 'upi', 'cash', 'investment', 'wallet', 'referral'],
     default: 'bank_transfer'
   },
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    default: null
+  },
+  productName: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  vipLevel: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   screenshot: {
     type: String,  // Cloudinary URL
     default: null

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowUp, FiArrowDown, FiEye, FiEyeOff, FiRefreshCw } from 'react-icons/fi';
+import { FiArrowUp, FiEye, FiEyeOff, FiRefreshCw } from 'react-icons/fi';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -68,16 +68,10 @@ const WalletCard = ({ stats, onRefresh }) => {
         {showBalance ? `ETB${balance.toLocaleString()}` : '••••••'}
       </p>
       
-      <div className="flex gap-3 mt-4">
-        <Link
-          to="/recharge"
-          className="flex-1 bg-white/20 backdrop-blur-sm py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-white/30 transition-colors"
-        >
-          <FiArrowDown className="text-green-300" /> Recharge
-        </Link>
+      <div className="mt-4">
         <Link
           to="/withdraw"
-          className="flex-1 bg-white/20 backdrop-blur-sm py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-white/30 transition-colors"
+          className="w-full bg-white/20 backdrop-blur-sm py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-white/30 transition-colors"
         >
           <FiArrowUp className="text-orange-300" /> Withdraw
         </Link>
