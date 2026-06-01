@@ -44,7 +44,16 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  telegramUsername: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  isSuperAdmin: {
     type: Boolean,
     default: false
   },

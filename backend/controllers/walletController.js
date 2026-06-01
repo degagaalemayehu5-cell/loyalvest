@@ -124,8 +124,8 @@ const submitRechargeRequest = async (req, res) => {
       });
     }
     
-    // Get Cloudinary URL (this is the secure URL from Cloudinary)
-    const screenshotUrl = req.file.path; // Cloudinary returns the URL in 'path'
+    // Get Cloudinary URL from uploaded file
+    const screenshotUrl = req.file.path || req.file.secure_url || req.file.location || req.file.url;
     
     console.log('Screenshot uploaded to Cloudinary:', screenshotUrl);
     
@@ -165,9 +165,14 @@ const submitRechargeRequest = async (req, res) => {
 // @access  Private
 const getRechargeInfo = async (req, res) => {
   try {
-    // Get admin users
-    const admins = await User.find({ isAdmin: true }).select('name email');
+    // Get admin users with Telegram contacts only
+    const admins = await User.find({ isAdmin: true, telegramUsername: { $exists: true, $ne: '' } }).select('name telegramUsername');
     
+    const supportContacts = admins.map(admin => ({
+      name: admin.name,
+      telegramUsername: admin.telegramUsername
+    }));
+
     const rechargeInfo = {
       adminAccounts: [
         {
@@ -192,6 +197,7 @@ const getRechargeInfo = async (req, res) => {
           adminName: "Admin Team"
         }
       ],
+      supportContacts,
       instructions: [
         'Transfer the exact amount to any of the bank accounts above',
         'Use your registered phone as reference',

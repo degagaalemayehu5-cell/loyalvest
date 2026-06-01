@@ -98,7 +98,6 @@ const Recharge = () => {
     
     try {
       const response = await api.post('/wallet/recharge', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgress(percentCompleted);
@@ -174,6 +173,38 @@ const Recharge = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        {rechargeInfo && rechargeInfo.supportContacts && rechargeInfo.supportContacts.length > 0 && (
+          <div className="card">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <FiInfo className="text-blue-600" /> Admin Support Contacts
+            </h3>
+            <div className="space-y-3">
+              {rechargeInfo.supportContacts.map((admin, index) => (
+                <div key={index} className="border rounded-lg p-3 bg-white">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-gray-900">{admin.name || 'Admin'}</p>
+                      <p className="text-xs text-gray-500">Telegram only</p>
+                    </div>
+                    {admin.telegramUsername ? (
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">@{admin.telegramUsername}</span>
+                    ) : (
+                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">No Telegram</span>
+                    )}
+                  </div>
+                  {admin.telegramUsername && (
+                    <div className="mt-2 flex items-center justify-between text-sm text-gray-700">
+                      <span>Contact on Telegram for support</span>
+                      <button onClick={() => copyText(`@${admin.telegramUsername}`)} className="text-blue-600 font-medium">
+                        Copy
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
         

@@ -81,7 +81,8 @@ const register = async (req, res) => {
         phone: user.phone,
         referralCode: user.referralCode,
         level: user.level,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
+        isSuperAdmin: user.isSuperAdmin
       }
     });
   } catch (error) {
@@ -141,6 +142,7 @@ const login = async (req, res) => {
         referralCode: user.referralCode,
         level: user.level,
         isAdmin: user.isAdmin,
+        isSuperAdmin: user.isSuperAdmin,
         totalInvestment: user.totalInvestment,
         totalProfit: user.totalProfit
       }

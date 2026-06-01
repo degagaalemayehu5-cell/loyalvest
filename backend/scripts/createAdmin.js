@@ -27,38 +27,37 @@ try {
     console.log('ℹ️ Email index already gone or not found');
 }
 
-    // Check if admin already exists
-    const existingAdmin = await User.findOne({ phone: '0725157775' });
+    // Check if super admin already exists
+    const existingAdmin = await User.findOne({ phone: '0976017780' });
     if (existingAdmin) {
-      console.log('\n⚠️ Admin already exists!');
+      console.log('\n⚠️ Super Admin already exists!');
       console.log('=================================');
-      console.log('📧 Phone: 0725157775');
+      console.log('📧 Phone: 0976017780');
       console.log('🔑 You can login with your existing password');
       console.log('=================================\n');
       process.exit();
     }
 
-    // Hash password
+    // Password for the super admin
     const plainPassword = '357415963';
 
-
-    // Create admin user
+    // Create super admin user
     const admin = await User.create({
-      name: 'System Administrator',
-      phone: '0725157775',
+      name: 'Super Administrator',
+      phone: '0976017780',
       password: plainPassword,
-      referralCode: 'ADMIN' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+      referralCode: 'SUPER' + Math.random().toString(36).substring(2, 8).toUpperCase(),
       isAdmin: true,
+      isSuperAdmin: true,
       isActive: true,
       level: 'DIAMOND',
       totalInvestment: 0,
       totalProfit: 0
     });
 
-
-    console.log('\n🎉 Admin created successfully!');
+    console.log('\n🎉 Super Admin created successfully!');
     console.log('=================================');
-    console.log('📧 Phone: 0725157775');
+    console.log('📧 Phone: 0976017780');
     console.log('🔑 Password: 357415963');
     console.log('🆔 Admin ID:', admin._id.toString());
     console.log('=================================');

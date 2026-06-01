@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/adminOnly');
+const { superAdminOnly } = require('../middleware/superAdminOnly');
 const Product = require('../models/Product');
 const {
   getPendingWithdrawals,
@@ -14,7 +15,11 @@ const {
   updateUserStatus,
   getPendingRecharges,
   approveRecharge,
-  rejectRecharge
+  rejectRecharge,
+  getAdmins,
+  createAdmin,
+  updateAdmin,
+  deleteAdmin
 } = require('../controllers/adminController');
 
 // All routes require admin access
@@ -28,8 +33,8 @@ router.put('/withdrawals/:id/reject', rejectWithdrawal);
 
 // Recharge routes
 router.get('/recharge/pending', getPendingRecharges);
-router.put('/recharge/:id/approve', approveRecharge);
-router.put('/recharge/:id/reject', rejectRecharge);
+router.put('/recharge/:id/approve', superAdminOnly, approveRecharge);
+router.put('/recharge/:id/reject', superAdminOnly, rejectRecharge);
 
 // Admin request routes
 router.get('/requests/pending', getPendingAdminRequests);
@@ -46,6 +51,11 @@ router.get('/products', async (req, res) => {
 });
 
 router.post('/products', createProduct);
+
+router.get('/admins', getAdmins);
+router.post('/admins', superAdminOnly, createAdmin);
+router.put('/admins/:id', superAdminOnly, updateAdmin);
+router.delete('/admins/:id', superAdminOnly, deleteAdmin);
 
 router.put('/products/:id', async (req, res) => {
   try {

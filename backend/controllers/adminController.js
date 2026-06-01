@@ -373,6 +373,105 @@ const updateUserStatus = async (req, res) => {
   }
 };
 
+// @desc    Get all admin accounts
+// @route   GET /api/admin/admins
+// @access  Private/Admin
+const getAdmins = async (req, res) => {
+  try {
+    const admins = await User.find({ isAdmin: true }).select('-password').sort({ createdAt: -1 });
+    res.status(200).json({ success: true, admins });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// @desc    Create a new admin account
+// @route   POST /api/admin/admins
+// @access  Private/Admin
+const createAdmin = async (req, res) => {
+  try {
+    const { name, phone, password, telegramUsername, isSuperAdmin } = req.body;
+
+    if (!name || !phone || !password) {
+      return res.status(400).json({ success: false, message: 'Name, phone and password are required' });
+    }
+
+    const existingUser = await User.findOne({ phone });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Phone number already exists' });
+    }
+
+    const admin = await User.create({
+      name,
+      phone,
+      password,
+      telegramUsername: telegramUsername || '',
+      isAdmin: true,
+      isSuperAdmin: !!isSuperAdmin,
+      isActive: true
+    });
+
+    const adminData = admin.toObject();
+    delete adminData.password;
+
+    res.status(201).json({ success: true, admin: adminData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// @desc    Update admin account
+// @route   PUT /api/admin/admins/:id
+// @access  Private/Admin
+const updateAdmin = async (req, res) => {
+  try {
+    const { name, phone, password, telegramUsername, isActive } = req.body;
+    const admin = await User.findById(req.params.id).select('+password');
+
+    if (!admin || !admin.isAdmin) {
+      return res.status(404).json({ success: false, message: 'Admin account not found' });
+    }
+
+    if (name) admin.name = name;
+    if (phone) admin.phone = phone;
+    if (typeof isActive !== 'undefined') admin.isActive = isActive;
+    if (typeof telegramUsername !== 'undefined') admin.telegramUsername = telegramUsername;
+    if (typeof isSuperAdmin !== 'undefined') admin.isSuperAdmin = isSuperAdmin;
+    if (password) admin.password = password;
+
+    await admin.save();
+
+    const adminData = admin.toObject();
+    delete adminData.password;
+
+    res.status(200).json({ success: true, admin: adminData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// @desc    Delete admin account
+// @route   DELETE /api/admin/admins/:id
+// @access  Private/Admin
+const deleteAdmin = async (req, res) => {
+  try {
+    const admin = await User.findById(req.params.id);
+    if (!admin || !admin.isAdmin) {
+      return res.status(404).json({ success: false, message: 'Admin account not found' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ success: true, message: 'Admin deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
 module.exports = {
   getPendingWithdrawals,
   approveWithdrawal,
@@ -384,5 +483,9 @@ module.exports = {
   approveAdminRequest,
   createProduct,
   getAllUsers,
-  updateUserStatus
+  updateUserStatus,
+  getAdmins,
+  createAdmin,
+  updateAdmin,
+  deleteAdmin
 };

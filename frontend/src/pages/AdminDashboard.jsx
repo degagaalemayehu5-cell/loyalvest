@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import { useAuth } from '../context/AuthContext';
 import { 
   FiUsers, FiDollarSign, FiClock, FiCheckCircle, FiXCircle, 
   FiUserCheck, FiUpload, FiPackage, FiEdit2, FiTrash2, 
@@ -11,13 +12,21 @@ import api from '../utils/api';
 const AdminDashboard = () => {
   const [withdrawals, setWithdrawals] = useState([]);
   const [recharges, setRecharges] = useState([]);
-  const [adminRequests, setAdminRequests] = useState([]);
+  const [admins, setAdmins] = useState([]);
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [activeTab, setActiveTab] = useState('withdrawals');
+  const [adminForm, setAdminForm] = useState({
+    name: '',
+    phone: '',
+    password: '',
+    telegramUsername: '',
+    isSuperAdmin: false
+  });
   const [loading, setLoading] = useState(true);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [editingAdmin, setEditingAdmin] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
@@ -36,6 +45,8 @@ const AdminDashboard = () => {
     pendingRequests: 0,
     totalUsers: 0
   });
+  const { user } = useAuth();
+  const isSuperAdmin = user?.isSuperAdmin;
   
   useEffect(() => {
     fetchData();
@@ -52,10 +63,9 @@ const AdminDashboard = () => {
         const res = await api.get('/admin/recharge/pending');
         setRecharges(res.data.recharges);
         setStats(prev => ({ ...prev, totalRecharges: res.data.recharges.length }));
-      } else if (activeTab === 'requests') {
-        const res = await api.get('/admin/requests/pending');
-        setAdminRequests(res.data.requests);
-        setStats(prev => ({ ...prev, pendingRequests: res.data.requests.length }));
+      } else if (activeTab === 'admins') {
+        const res = await api.get('/admin/admins');
+        setAdmins(res.data.admins);
       } else if (activeTab === 'users') {
         const res = await api.get('/admin/users');
         setUsers(res.data.users);
@@ -81,6 +91,10 @@ const AdminDashboard = () => {
   
   // Withdrawal Handlers
   const handleApproveWithdrawal = async (id) => {
+    if (!isSuperAdmin) {
+      toast.error('Only Super Admin can approve withdrawals');
+      return;
+    }
     try {
       await api.put(`/admin/withdrawals/${id}/approve`);
       toast.success('Withdrawal approved successfully');
@@ -91,6 +105,10 @@ const AdminDashboard = () => {
   };
   
   const handleRejectWithdrawal = async (id) => {
+    if (!isSuperAdmin) {
+      toast.error('Only Super Admin can reject withdrawals');
+      return;
+    }
     const reason = prompt('Please enter reason for rejection:');
     if (reason) {
       try {
@@ -105,6 +123,10 @@ const AdminDashboard = () => {
   
   // Recharge Handlers
   const handleApproveRecharge = async (id) => {
+    if (!isSuperAdmin) {
+      toast.error('Only Super Admin can approve recharge requests');
+      return;
+    }
     try {
       await api.put(`/admin/recharge/${id}/approve`);
       toast.success('Recharge approved and amount credited');
@@ -115,6 +137,10 @@ const AdminDashboard = () => {
   };
   
   const handleRejectRecharge = async (id) => {
+    if (!isSuperAdmin) {
+      toast.error('Only Super Admin can reject recharge requests');
+      return;
+    }
     const reason = prompt('Please enter reason for rejection:');
     if (reason) {
       try {
@@ -135,6 +161,82 @@ const AdminDashboard = () => {
       fetchData();
     } catch (error) {
       toast.error('Failed to approve admin request');
+    }
+  };
+
+  const resetAdminForm = () => {
+    setAdminForm({
+      name: '',
+      phone: '',
+      password: '',
+      telegramUsername: '',
+      isSuperAdmin: false
+    });
+    setEditingAdmin(null);
+  };
+
+  const handleEditAdmin = (admin) => {
+    setEditingAdmin(admin);
+    setAdminForm({
+      name: admin.name || '',
+      phone: admin.phone || '',
+      password: '',
+      telegramUsername: admin.telegramUsername || '',
+      isSuperAdmin: admin.isSuperAdmin || false
+    });
+  };
+
+  const handleDeleteAdmin = async (adminId) => {
+    if (!window.confirm('Are you sure you want to delete this admin account?')) return;
+    try {
+      await api.delete(`/admin/admins/${adminId}`);
+      toast.success('Admin account deleted successfully');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to delete admin');
+    }
+  };
+
+  const handleCreateAdmin = async () => {
+    if (!isSuperAdmin) {
+      toast.error('Only Super Admin can create or update admin accounts');
+      return;
+    }
+    if (!adminForm.name || !adminForm.phone) {
+      toast.error('Please fill name and phone');
+      return;
+    }
+
+    try {
+      if (editingAdmin) {
+        const payload = {
+          name: adminForm.name,
+          phone: adminForm.phone,
+          telegramUsername: adminForm.telegramUsername,
+          isSuperAdmin: adminForm.isSuperAdmin
+        };
+        if (adminForm.password) payload.password = adminForm.password;
+        await api.put(`/admin/admins/${editingAdmin._id}`, payload);
+        toast.success('Admin account updated successfully');
+      } else {
+        if (!adminForm.password) {
+          toast.error('Password is required when creating a new admin');
+          return;
+        }
+        await api.post('/admin/admins', {
+          name: adminForm.name,
+          phone: adminForm.phone,
+          password: adminForm.password,
+          telegramUsername: adminForm.telegramUsername,
+          isSuperAdmin: adminForm.isSuperAdmin
+        });
+        toast.success('Admin account created successfully');
+      }
+
+      resetAdminForm();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to save admin');
     }
   };
   
@@ -244,7 +346,7 @@ const AdminDashboard = () => {
   const tabs = [
     { id: 'withdrawals', label: 'Withdrawals', icon: FiDollarSign, count: withdrawals.length },
     { id: 'recharges', label: 'Recharge Requests', icon: FiUpload, count: recharges.length },
-    { id: 'requests', label: 'Admin Requests', icon: FiUserCheck, count: adminRequests.length },
+    { id: 'admins', label: 'Admins', icon: FiUserCheck, count: admins.length },
     { id: 'users', label: 'Users', icon: FiUsers, count: users.length },
     { id: 'products', label: 'Products', icon: FiPackage, count: products.length },
   ];
@@ -269,7 +371,7 @@ const AdminDashboard = () => {
         </div>
         <div className="bg-white rounded-lg p-3 shadow-sm">
           <div className="flex items-center justify-between">
-            <div><p className="text-xs text-gray-500">Admin Requests</p><p className="text-xl font-bold text-purple-600">{stats.pendingRequests}</p></div>
+            <div><p className="text-xs text-gray-500">Admin Accounts</p><p className="text-xl font-bold text-purple-600">{admins.length}</p></div>
             <FiUserCheck className="w-6 h-6 text-purple-400" />
           </div>
         </div>
@@ -321,9 +423,14 @@ const AdminDashboard = () => {
                         <div className="flex justify-between items-center"><span className="text-gray-600">Account Holder:</span><span className="font-medium">{w.bankDetails?.accountHolder || w.user?.name}</span></div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleApproveWithdrawal(w._id)} className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"><FiCheckCircle /> Approve</button>
-                      <button onClick={() => handleRejectWithdrawal(w._id)} className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 flex items-center justify-center gap-2"><FiXCircle /> Reject</button>
+                    <div className="flex flex-col gap-3">
+                      {!isSuperAdmin && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">Only Super Admin can approve or reject withdrawal requests.</div>
+                      )}
+                      <div className="flex gap-2">
+                        <button onClick={() => handleApproveWithdrawal(w._id)} disabled={!isSuperAdmin} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${isSuperAdmin ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}><FiCheckCircle /> Approve</button>
+                        <button onClick={() => handleRejectWithdrawal(w._id)} disabled={!isSuperAdmin} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${isSuperAdmin ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}><FiXCircle /> Reject</button>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -372,9 +479,14 @@ const AdminDashboard = () => {
             </div>
           </div>
           
-          <div className="flex gap-2">
-            <button onClick={() => handleApproveRecharge(r._id)} className="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"><FiCheckCircle /> Approve & Credit ETB{r.amount?.toLocaleString()}</button>
-            <button onClick={() => handleRejectRecharge(r._id)} className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 flex items-center justify-center gap-2"><FiXCircle /> Reject</button>
+          <div className="space-y-3">
+            {!isSuperAdmin && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">Only Super Admin can approve or reject recharge requests.</div>
+            )}
+            <div className="flex gap-2">
+              <button onClick={() => handleApproveRecharge(r._id)} disabled={!isSuperAdmin} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${isSuperAdmin ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}><FiCheckCircle /> Approve & Credit ETB{r.amount?.toLocaleString()}</button>
+              <button onClick={() => handleRejectRecharge(r._id)} disabled={!isSuperAdmin} className={`flex-1 py-2 rounded-lg flex items-center justify-center gap-2 ${isSuperAdmin ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}><FiXCircle /> Reject</button>
+            </div>
           </div>
         </div>
       ))
@@ -422,17 +534,53 @@ const AdminDashboard = () => {
           )}
           
           {/* ADMIN REQUESTS TAB */}
-          {activeTab === 'requests' && (
-            <div className="space-y-3">
-              {adminRequests.length === 0 ? (
-                <div className="bg-white rounded-xl p-8 text-center"><FiUserCheck className="w-12 h-12 text-gray-400 mx-auto mb-2" /><p className="text-gray-500">No pending admin requests</p></div>
-              ) : (
-                adminRequests.map(req => (
-                  <div key={req._id} className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-400">
-                    <div className="flex justify-between items-start"><div><p className="font-bold text-gray-900">{req.user?.name}</p><p className="text-sm text-gray-500">{req.user?.phone}</p></div><button onClick={() => handleApproveAdminRequest(req._id)} className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600">Approve Admin</button></div>
-                    <p className="text-sm mt-2 text-gray-600"><span className="font-medium">Reason:</span> {req.reason}</p>
+          {activeTab === 'admins' && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h3 className="font-semibold text-gray-900 mb-4">Add New Admin</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Name *</label><input type="text" value={adminForm.name} onChange={(e) => setAdminForm({...adminForm, name: e.target.value})} className="input-field" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label><input type="text" value={adminForm.phone} onChange={(e) => setAdminForm({...adminForm, phone: e.target.value})} className="input-field" placeholder="09xxxxxxxx" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Password *</label><input type="password" value={adminForm.password} onChange={(e) => setAdminForm({...adminForm, password: e.target.value})} className="input-field" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Telegram Username</label><input type="text" value={adminForm.telegramUsername} onChange={(e) => setAdminForm({...adminForm, telegramUsername: e.target.value})} className="input-field" placeholder="username without @" /></div>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={adminForm.isSuperAdmin} onChange={(e) => setAdminForm({...adminForm, isSuperAdmin: e.target.checked})} className="w-4 h-4" /> Grant Super Admin</label>
                   </div>
-                ))
+                  <div className="flex gap-3">
+                    <button onClick={handleCreateAdmin} disabled={!isSuperAdmin} className={`btn-primary w-full py-3 ${!isSuperAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}>{editingAdmin ? 'Update Admin' : 'Create Admin'}</button>
+                    {editingAdmin && (
+                      <button onClick={resetAdminForm} className="btn-secondary w-full py-3">Cancel</button>
+                    )}
+                  </div>
+                  {!isSuperAdmin && (
+                    <p className="text-xs text-gray-500">Only Super Admin can create or edit admin accounts.</p>
+                  )}
+                </div>
+              </div>
+
+              {admins.length === 0 ? (
+                <div className="bg-white rounded-xl p-8 text-center"><FiUserCheck className="w-12 h-12 text-gray-400 mx-auto mb-2" /><p className="text-gray-500">No admin accounts found.</p></div>
+              ) : (
+                <div className="grid grid-cols-1 gap-3">
+                  {admins.map(admin => (
+                    <div key={admin._id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                      <div className="flex flex-wrap justify-between items-center gap-3">
+                        <div>
+                          <p className="font-semibold text-gray-900">{admin.name}</p>
+                          <p className="text-sm text-gray-500">Phone: {admin.phone}</p>
+                          {admin.isSuperAdmin && <span className="text-xs inline-block mt-1 bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Super Admin</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => handleEditAdmin(admin)} disabled={!isSuperAdmin} className={`text-blue-600 rounded-lg p-2 ${isSuperAdmin ? 'hover:bg-blue-50' : 'opacity-50 cursor-not-allowed'}`}>Edit</button>
+                          <button onClick={() => handleDeleteAdmin(admin._id)} disabled={!isSuperAdmin} className={`text-red-600 rounded-lg p-2 ${isSuperAdmin ? 'hover:bg-red-50' : 'opacity-50 cursor-not-allowed'}`}>Delete</button>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-sm text-gray-600">
+                        Telegram: {admin.telegramUsername ? `@${admin.telegramUsername}` : 'Not set'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -440,6 +588,9 @@ const AdminDashboard = () => {
           {/* USERS TAB */}
           {activeTab === 'users' && (
             <div className="space-y-3">
+              {!isSuperAdmin && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">Only Super Admin can approve/reject recharge and withdrawal requests.</div>
+              )}
               {users.map(u => (
                 <div key={u._id} className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-400">
                   <div className="flex justify-between items-center flex-wrap gap-2">
