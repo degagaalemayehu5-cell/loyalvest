@@ -17,13 +17,12 @@ const Settings = () => {
 
   useEffect(() => {
     // Check if app is already installed
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     if (isStandalone) {
       setIsInstalled(true);
       return;
     }
 
-    // Listen for install prompt
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -32,15 +31,23 @@ const Settings = () => {
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Listen for app installed
-    window.addEventListener('appinstalled', () => {
+    // If the prompt event already fired before this page mounted, use the cached event
+    if (window.deferredPrompt) {
+      setDeferredPrompt(window.deferredPrompt);
+      setShowInstallOption(true);
+    }
+
+    const installedHandler = () => {
       setIsInstalled(true);
       setShowInstallOption(false);
       toast.success('Loyalvest installed successfully!');
-    });
+    };
+
+    window.addEventListener('appinstalled', installedHandler);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
     };
   }, []);
 

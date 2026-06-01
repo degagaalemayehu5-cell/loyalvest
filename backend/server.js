@@ -78,8 +78,11 @@ const frontendDistPath = path.join(__dirname, '../frontend/dist');
 
 // Serve service worker with correct headers
 app.get('/sw.js', (req, res) => {
-  const swPath = path.join(frontendPublicPath, 'sw.js');
-  if (fs.existsSync(swPath)) {
+  const publicSwPath = path.join(frontendPublicPath, 'sw.js');
+  const distSwPath = path.join(frontendDistPath, 'sw.js');
+  const swPath = fs.existsSync(publicSwPath) ? publicSwPath : fs.existsSync(distSwPath) ? distSwPath : null;
+
+  if (swPath) {
     res.setHeader('Content-Type', 'application/javascript');
     res.setHeader('Service-Worker-Allowed', '/');
     res.sendFile(swPath);
@@ -90,8 +93,11 @@ app.get('/sw.js', (req, res) => {
 
 // Serve manifest.json
 app.get('/manifest.json', (req, res) => {
-  const manifestPath = path.join(frontendPublicPath, 'manifest.json');
-  if (fs.existsSync(manifestPath)) {
+  const publicManifestPath = path.join(frontendPublicPath, 'manifest.json');
+  const distManifestPath = path.join(frontendDistPath, 'manifest.json');
+  const manifestPath = fs.existsSync(publicManifestPath) ? publicManifestPath : fs.existsSync(distManifestPath) ? distManifestPath : null;
+
+  if (manifestPath) {
     res.setHeader('Content-Type', 'application/manifest+json');
     res.sendFile(manifestPath);
   } else {
@@ -101,8 +107,11 @@ app.get('/manifest.json', (req, res) => {
 
 // Serve icon files
 app.get('/icons/:icon', (req, res) => {
-  const iconPath = path.join(frontendPublicPath, 'icons', req.params.icon);
-  if (fs.existsSync(iconPath)) {
+  const publicIconPath = path.join(frontendPublicPath, 'icons', req.params.icon);
+  const distIconPath = path.join(frontendDistPath, 'icons', req.params.icon);
+  const iconPath = fs.existsSync(publicIconPath) ? publicIconPath : fs.existsSync(distIconPath) ? distIconPath : null;
+
+  if (iconPath) {
     res.sendFile(iconPath);
   } else {
     res.status(404).json({ error: 'Icon not found' });
