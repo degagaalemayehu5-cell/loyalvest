@@ -184,22 +184,22 @@ const getRechargeInfo = async (req, res) => {
         {
           bankName: "CBE",
           accountHolder: "Loyalvest Investments",
-          realname: "Eba Wasehun",
-          accountNumber: "COMING",
+          realname: "Leta Alemayehu",
+          accountNumber: "1000475294258",
           adminName: "Admin Team"
         },
         {
           bankName: "Awash Bank",
           accountHolder: "Loyalvest Investments",
-          realname: "currently unavailable",
-          accountNumber: "013350000...",
+          realname: "Cherinet Bogale",
+          accountNumber: "013351149025000",
           adminName: "Admin Team"
         },
         {
           bankName: "CBE",
           accountHolder: "Loyalvest Investments",
-          realname: "currently unavailable",
-          accountNumber: "1000...",
+          realname: "Degaga Alemayehu",
+          accountNumber: "1000464654252",
           adminName: "Admin Team"
         }
       ],
